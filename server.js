@@ -44,7 +44,7 @@ const KNOWLEDGE = readJson(KNOWLEDGE_PATHS, {
 
 const SYSTEM_PROMPT = readText(
   PROMPT_PATHS,
-  'Eres CYRA Reefer Vision. Analiza imágenes PTI de contenedores reefer, clasifica hallazgos por SUPERIOR, MEDIA e INFERIOR, marca daños con overlays y responde solo JSON válido.'
+  'Eres el motor CYRA IA de CYRA Reefer Vision. Analiza imágenes PTI de contenedores reefer, clasifica hallazgos por SUPERIOR, MEDIA e INFERIOR, marca daños con overlays y responde solo JSON válido.'
 );
 
 app.use(express.static(__dirname));
@@ -55,7 +55,7 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     app: 'CYRA Reefer Vision',
-    geminiConfigured: Boolean(GEMINI_API_KEY),
+    aiConfigured: Boolean(GEMINI_API_KEY),
     model: GEMINI_MODEL,
     indexFound: Boolean(firstExisting(INDEX_PATHS)),
     knowledgeFound: Boolean(firstExisting(KNOWLEDGE_PATHS)),
@@ -75,11 +75,16 @@ app.post('/api/analyze-inspection', async (req, res) => {
       return res.json({ source: 'fallback-no-api-key', ...fallbackInspection(images) });
     }
 
-    const result = await callGeminiInspection(images, sections);
+    const result = await callCyraInspection(images, sections);
     const normalized = normalizeInspection(result, images);
-    return res.json({ source: 'gemini', ...normalized });
+
+    return res.json({
+      source: 'cyra-ia',
+      ...normalized
+    });
   } catch (error) {
-    console.error('Gemini inspection error:', error);
+    console.error('CYRA IA inspection error:', error);
+
     return res.json({
       source: 'fallback-error',
       error: error.message,
@@ -100,11 +105,16 @@ app.post('/api/analyze-epp', async (req, res) => {
       return res.json({ source: 'fallback-no-api-key', ...fallbackEPP(images) });
     }
 
-    const result = await callGeminiEpp(images);
+    const result = await callCyraEpp(images);
     const normalized = normalizeEpp(result, images);
-    return res.json({ source: 'gemini', ...normalized });
+
+    return res.json({
+      source: 'cyra-ia',
+      ...normalized
+    });
   } catch (error) {
-    console.error('Gemini EPP error:', error);
+    console.error('CYRA IA EPP error:', error);
+
     return res.json({
       source: 'fallback-error',
       error: error.message,
@@ -113,7 +123,7 @@ app.post('/api/analyze-epp', async (req, res) => {
   }
 });
 
-async function callGeminiInspection(images, sections) {
+async function callCyraInspection(images, sections) {
   const parts = [
     {
       text: `${SYSTEM_PROMPT}
@@ -173,7 +183,7 @@ SCHEMA:
     if (inline) parts.push({ inline_data: inline });
   }
 
-  const response = await fetch(geminiUrl(), {
+  const response = await fetch(aiProviderUrl(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -191,14 +201,14 @@ SCHEMA:
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Gemini API ${response.status}: ${text.slice(0, 500)}`);
+    throw new Error(`CYRA IA API ${response.status}: ${text.slice(0, 500)}`);
   }
 
   const data = await response.json();
   return extractJson(data);
 }
 
-async function callGeminiEpp(images) {
+async function callCyraEpp(images) {
   const parts = [
     {
       text: `${SYSTEM_PROMPT}
@@ -232,7 +242,7 @@ Devuelve SOLO JSON:
     if (inline) parts.push({ inline_data: inline });
   }
 
-  const response = await fetch(geminiUrl(), {
+  const response = await fetch(aiProviderUrl(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -250,7 +260,7 @@ Devuelve SOLO JSON:
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Gemini API ${response.status}: ${text.slice(0, 500)}`);
+    throw new Error(`CYRA IA API ${response.status}: ${text.slice(0, 500)}`);
   }
 
   const data = await response.json();
@@ -281,8 +291,13 @@ function normalizeInspection(raw, images) {
   });
 
   const all = sections.flatMap((s) => s.findings);
+
   const score = clampNumber(
-    raw.score ?? (sections.length ? Math.round(sections.reduce((sum, s) => sum + s.score, 0) / sections.length) : calculateScore(all)),
+    raw.score ?? (
+      sections.length
+        ? Math.round(sections.reduce((sum, s) => sum + s.score, 0) / sections.length)
+        : calculateScore(all)
+    ),
     0,
     100
   );
@@ -580,7 +595,7 @@ function extractJson(data) {
   const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('\n') || '';
 
   if (!text.trim()) {
-    throw new Error('Gemini no devolvió texto.');
+    throw new Error('CYRA IA no devolvió texto.');
   }
 
   try {
@@ -589,14 +604,14 @@ function extractJson(data) {
     const match = text.match(/\{[\s\S]*\}/);
 
     if (!match) {
-      throw new Error('No se encontró JSON en la respuesta de Gemini.');
+      throw new Error('No se encontró JSON en la respuesta de CYRA IA.');
     }
 
     return JSON.parse(match[0]);
   }
 }
 
-function geminiUrl() {
+function aiProviderUrl() {
   return `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
 }
 
@@ -640,5 +655,5 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`CYRA Reefer Vision running on port ${PORT}`);
-  console.log(`Gemini configured: ${Boolean(GEMINI_API_KEY)} | Model: ${GEMINI_MODEL}`);
+  console.log(`CYRA IA configured: ${Boolean(GEMINI_API_KEY)} | Model: ${GEMINI_MODEL}`);
 });
