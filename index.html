@@ -3,88 +3,520 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CYRA Reefer Vision | Gemini</title>
+  <title>CYRA Reefer Vision | CYRA IA</title>
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
-    :root{
-      --bg:#0A0A0A;--panel:#111827;--panel2:#0f172a;--line:#263244;
-      --text:#FFFFFF;--muted:#9CA3AF;--primary:#00BFFF;--primary2:#38BDF8;--primary3:#7DD3FC;
-      --ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;
-      --radius:20px;--shadow:0 20px 60px rgba(0,0,0,.35);
+    :root {
+      --bg: #0A0A0A;
+      --panel: #111827;
+      --panel2: #0f172a;
+      --line: #263244;
+      --text: #FFFFFF;
+      --muted: #9CA3AF;
+      --primary: #00BFFF;
+      --primary2: #38BDF8;
+      --primary3: #7DD3FC;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
     }
-    *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(circle at top left,rgba(0,191,255,.16),transparent 34%),var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
-    .login{min-height:100vh;display:grid;place-items:center;padding:24px}
-    .login-card{width:min(460px,100%);background:rgba(17,24,39,.86);border:1px solid rgba(125,211,252,.18);border-radius:28px;padding:34px;box-shadow:var(--shadow);backdrop-filter:blur(14px)}
-    .logo{display:flex;gap:12px;align-items:center;margin-bottom:20px}
-    .logo-mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--primary),#0ea5e9);display:grid;place-items:center;color:#00111a;font-weight:900}
-    .logo h1{font-size:22px;margin:0}.logo small{color:var(--muted)}
-    label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
-    input,textarea{width:100%;background:#0b1220;color:white;border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none}
-    input:focus,textarea:focus{border-color:var(--primary)}
-    button{border:0;border-radius:14px;padding:12px 15px;font-weight:800;cursor:pointer;color:#061018;background:linear-gradient(135deg,var(--primary),var(--primary3));display:inline-flex;gap:8px;align-items:center;justify-content:center}
-    button.secondary{background:#111827;color:var(--text);border:1px solid var(--line)}
-    button.danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.35)}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .app{display:none;min-height:100vh}
-    .sidebar{position:fixed;inset:0 auto 0 0;width:280px;background:rgba(17,24,39,.95);border-right:1px solid var(--line);padding:22px;z-index:20}
-    .brand{display:flex;gap:12px;align-items:center;margin-bottom:28px}
-    .brand .logo-mark{width:42px;height:42px}.brand b{font-size:18px}.brand span{display:block;color:var(--muted);font-size:12px}
-    .nav{display:grid;gap:10px}
-    .nav button{justify-content:flex-start;background:transparent;color:var(--muted);border:1px solid transparent}
-    .nav button.active,.nav button:hover{color:white;background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.22)}
-    .main{margin-left:280px;padding:26px;max-width:1500px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
-    .topbar h2{margin:0;font-size:26px}.topbar p{margin:6px 0 0;color:var(--muted)}
-    .card{background:rgba(17,24,39,.84);border:1px solid rgba(148,163,184,.16);border-radius:var(--radius);box-shadow:0 16px 50px rgba(0,0,0,.22)}
-    .pad{padding:20px}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .pill{display:inline-flex;gap:7px;align-items:center;border-radius:999px;padding:7px 10px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.25);color:#dff8ff;font-size:12px;font-weight:800}
-    .pill.ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#bbf7d0}
-    .pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fde68a}
-    .pill.bad{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fecaca}
-    .muted{color:var(--muted)}.small{font-size:13px;color:var(--muted);line-height:1.55}
-    .upload{border:1.5px dashed rgba(56,189,248,.42);background:rgba(56,189,248,.06);border-radius:22px;padding:30px;text-align:center}
-    .upload input{display:none}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{display:flex;justify-content:space-between;gap:14px;align-items:center}
-    .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:16px}
-    .preview-card{overflow:hidden;border-radius:18px;background:#020617;border:1px solid var(--line)}
-    .img-wrap{position:relative;background:#020617}
-    .preview-card img{width:100%;height:230px;object-fit:contain;display:block;background:#020617}
-    .preview-info{padding:12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .box{position:absolute;border:2px solid var(--bad);background:rgba(239,68,68,.11);box-shadow:0 0 0 9999px rgba(0,0,0,.04)}
-    .box.warn{border-color:var(--warn);background:rgba(245,158,11,.10)}
-    .box.ok{border-color:var(--ok);background:rgba(34,197,94,.08)}
-    .tag{position:absolute;left:0;top:-27px;background:#111827;color:white;border:1px solid var(--line);font-size:11px;border-radius:9px;padding:5px 7px;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
-    .progress{height:10px;border-radius:999px;background:#020617;border:1px solid var(--line);overflow:hidden}
-    .progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--primary3))}
-    .kpi{padding:16px}.kpi b{display:block;font-size:28px}.kpi span{color:var(--muted);font-size:13px}
-    .view{display:none}.view.active{display:block}
-    table{width:100%;border-collapse:collapse;min-width:980px}th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{color:#dbeafe;background:rgba(56,189,248,.06)}
-    .table-wrap{overflow:auto;border-radius:16px;border:1px solid var(--line)}
-    .result-images .preview-grid{grid-template-columns:1fr}.result-images .preview-card img{height:auto;max-height:none;object-fit:contain}
-    .level-title{background:rgba(56,189,248,.08);font-weight:900;color:#e0f2fe}
-    .toast{position:fixed;right:18px;bottom:18px;background:#0f172a;border:1px solid rgba(56,189,248,.35);border-radius:16px;padding:14px 16px;color:white;box-shadow:var(--shadow);display:none;z-index:50}
-    @media(max-width:900px){
-      .sidebar{position:static;width:auto}.main{margin-left:0;padding:16px}.grid,.grid3{grid-template-columns:1fr}.topbar h2{font-size:22px}
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(0,191,255,.16), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+    }
+
+    .login {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      width: min(460px, 100%);
+      background: rgba(17,24,39,.86);
+      border: 1px solid rgba(125,211,252,.18);
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .logo {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), #0ea5e9);
+      display: grid;
+      place-items: center;
+      color: #00111a;
+      font-weight: 900;
+    }
+
+    .logo h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    .logo small {
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 14px 0 6px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      background: #0b1220;
+      color: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--primary);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 15px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #061018;
+      background: linear-gradient(135deg, var(--primary), var(--primary3));
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button.secondary {
+      background: #111827;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    button.danger {
+      background: rgba(239,68,68,.12);
+      color: #fecaca;
+      border: 1px solid rgba(239,68,68,.35);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .app {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 280px;
+      background: rgba(17,24,39,.95);
+      border-right: 1px solid var(--line);
+      padding: 22px;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .brand .logo-mark {
+      width: 42px;
+      height: 42px;
+    }
+
+    .brand b {
+      font-size: 18px;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav button {
+      justify-content: flex-start;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      color: white;
+      background: rgba(56,189,248,.1);
+      border-color: rgba(56,189,248,.22);
+    }
+
+    .main {
+      margin-left: 280px;
+      padding: 26px;
+      max-width: 1500px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .topbar p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .card {
+      background: rgba(17,24,39,.84);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: var(--radius);
+      box-shadow: 0 16px 50px rgba(0,0,0,.22);
+    }
+
+    .pad {
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(56,189,248,.12);
+      border: 1px solid rgba(56,189,248,.25);
+      color: #dff8ff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill.ok {
+      background: rgba(34,197,94,.12);
+      border-color: rgba(34,197,94,.3);
+      color: #bbf7d0;
+    }
+
+    .pill.warn {
+      background: rgba(245,158,11,.12);
+      border-color: rgba(245,158,11,.3);
+      color: #fde68a;
+    }
+
+    .pill.bad {
+      background: rgba(239,68,68,.12);
+      border-color: rgba(239,68,68,.3);
+      color: #fecaca;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .upload {
+      border: 1.5px dashed rgba(56,189,248,.42);
+      background: rgba(56,189,248,.06);
+      border-radius: 22px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .upload input {
+      display: none;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .between {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .preview-card {
+      overflow: hidden;
+      border-radius: 18px;
+      background: #020617;
+      border: 1px solid var(--line);
+    }
+
+    .img-wrap {
+      position: relative;
+      background: #020617;
+    }
+
+    .preview-card img {
+      width: 100%;
+      height: 230px;
+      object-fit: contain;
+      display: block;
+      background: #020617;
+    }
+
+    .preview-info {
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .box {
+      position: absolute;
+      border: 2px solid var(--bad);
+      background: rgba(239,68,68,.11);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.04);
+    }
+
+    .box.warn {
+      border-color: var(--warn);
+      background: rgba(245,158,11,.10);
+    }
+
+    .box.ok {
+      border-color: var(--ok);
+      background: rgba(34,197,94,.08);
+    }
+
+    .tag {
+      position: absolute;
+      left: 0;
+      top: -27px;
+      background: #111827;
+      color: white;
+      border: 1px solid var(--line);
+      font-size: 11px;
+      border-radius: 9px;
+      padding: 5px 7px;
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 999px;
+      background: #020617;
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--primary3));
+    }
+
+    .kpi {
+      padding: 16px;
+    }
+
+    .kpi b {
+      display: block;
+      font-size: 28px;
+    }
+
+    .kpi span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    th {
+      color: #dbeafe;
+      background: rgba(56,189,248,.06);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+
+    .result-images .preview-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .result-images .preview-card img {
+      height: auto;
+      max-height: none;
+      object-fit: contain;
+    }
+
+    .level-title {
+      background: rgba(56,189,248,.08);
+      font-weight: 900;
+      color: #e0f2fe;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: #0f172a;
+      border: 1px solid rgba(56,189,248,.35);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: white;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 50;
+    }
+
+    @media(max-width: 900px) {
+      .sidebar {
+        position: static;
+        width: auto;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 16px;
+      }
+
+      .grid,
+      .grid3 {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar h2 {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
+
 <body>
   <section class="login" id="loginView">
     <div class="login-card">
       <div class="logo">
         <div class="logo-mark">C</div>
-        <div><h1>CYRA REEFER VISION</h1><small>Agente IA Gemini para inspección PTI</small></div>
+        <div>
+          <h1>CYRA REEFER VISION</h1>
+          <small>Agente CYRA IA para inspección PTI</small>
+        </div>
       </div>
+
       <form id="loginForm">
         <label>Usuario</label>
         <input required value="admin" />
+
         <label>Contraseña</label>
         <input required type="password" value="admin" />
-        <button style="width:100%;margin-top:18px" type="submit"><i data-lucide="log-in"></i> Ingresar</button>
+
+        <button style="width:100%;margin-top:18px" type="submit">
+          <i data-lucide="log-in"></i>
+          Ingresar
+        </button>
       </form>
-      <p class="small" style="margin-top:16px">Demo: puedes entrar con cualquier usuario. La IA se ejecuta desde el backend conectado a Gemini.</p>
+
+      <p class="small" style="margin-top:16px">
+        Demo: puedes entrar con cualquier usuario. La IA se ejecuta desde el motor de análisis CYRA.
+      </p>
     </div>
   </section>
 
@@ -92,17 +524,43 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="logo-mark">C</div>
-        <div><b>CYRA</b><span>Reefer Vision</span></div>
+        <div>
+          <b>CYRA</b>
+          <span>Reefer Vision</span>
+        </div>
       </div>
+
       <div class="nav">
-        <button class="active" data-view="inspectionView"><i data-lucide="scan-search"></i> Inspección</button>
-        <button data-view="resultsView"><i data-lucide="bar-chart-3"></i> Resultados</button>
-        <button data-view="eppView"><i data-lucide="hard-hat"></i> EPP Operador</button>
-        <button data-view="reportView"><i data-lucide="file-text"></i> Reporte</button>
+        <button class="active" data-view="inspectionView">
+          <i data-lucide="scan-search"></i>
+          Inspección
+        </button>
+
+        <button data-view="resultsView">
+          <i data-lucide="bar-chart-3"></i>
+          Resultados
+        </button>
+
+        <button data-view="eppView">
+          <i data-lucide="hard-hat"></i>
+          EPP Operador
+        </button>
+
+        <button data-view="reportView">
+          <i data-lucide="file-text"></i>
+          Reporte
+        </button>
       </div>
+
       <div class="card pad" style="margin-top:22px">
-        <span class="pill ok"><i data-lucide="sparkles"></i> Gemini</span>
-        <p class="small">Sube todas las fotos juntas. CYRA clasificará hallazgos por SUPERIOR, MEDIA e INFERIOR.</p>
+        <span class="pill ok">
+          <i data-lucide="sparkles"></i>
+          CYRA IA
+        </span>
+
+        <p class="small">
+          Sube todas las fotos juntas. CYRA clasificará hallazgos por SUPERIOR, MEDIA e INFERIOR.
+        </p>
       </div>
     </aside>
 
@@ -111,9 +569,15 @@
         <div class="topbar">
           <div>
             <h2>Inspección PTI por imagen completa</h2>
-            <p>Ya no necesitas separar fotos por nivel. Sube imágenes de la unidad y CYRA las ordenará en resultados.</p>
+            <p>
+              Ya no necesitas separar fotos por nivel. Sube imágenes de la unidad y CYRA las ordenará en resultados.
+            </p>
           </div>
-          <span class="pill"><i data-lucide="layers"></i> Auto superior / media / inferior</span>
+
+          <span class="pill">
+            <i data-lucide="layers"></i>
+            Auto superior / media / inferior
+          </span>
         </div>
 
         <div class="grid">
@@ -121,8 +585,11 @@
             <div class="between">
               <div>
                 <h3 style="margin:0 0 6px">Carga de imágenes</h3>
-                <div class="small">Fotos del frente reefer, máquina, condensador, cableado, plug, parte inferior o detalles de daño.</div>
+                <div class="small">
+                  Fotos del frente reefer, máquina, condensador, cableado, plug, parte inferior o detalles de daño.
+                </div>
               </div>
+
               <span class="pill" id="countPill">0 imágenes</span>
             </div>
 
@@ -130,11 +597,24 @@
               <i data-lucide="upload-cloud" style="width:42px;height:42px;color:var(--primary)"></i>
               <h3>Subir imágenes de la inspección</h3>
               <p class="small">JPG, PNG o WEBP. Máximo 10 imágenes en total.</p>
+
               <div class="row" style="justify-content:center">
-                <button id="pickBtn" type="button"><i data-lucide="images"></i> Seleccionar imágenes</button>
-                <button id="demoBtn" type="button" class="secondary"><i data-lucide="flask-conical"></i> Cargar demo</button>
-                <button id="clearBtn" type="button" class="danger"><i data-lucide="trash-2"></i> Limpiar</button>
+                <button id="pickBtn" type="button">
+                  <i data-lucide="images"></i>
+                  Seleccionar imágenes
+                </button>
+
+                <button id="demoBtn" type="button" class="secondary">
+                  <i data-lucide="flask-conical"></i>
+                  Cargar demo
+                </button>
+
+                <button id="clearBtn" type="button" class="danger">
+                  <i data-lucide="trash-2"></i>
+                  Limpiar
+                </button>
               </div>
+
               <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" multiple />
             </div>
 
@@ -146,20 +626,51 @@
               <h3 style="margin:0">Agente IA CYRA</h3>
               <span class="pill" id="aiStatus">En espera</span>
             </div>
-            <p class="small">Gemini analiza las imágenes contra la base técnica PTI, checklist, ruta de inspección, riesgos y criterios CYRA.</p>
-            <div class="between"><span class="small" id="aiText">Listo para analizar toda la inspección</span><b id="aiPct">0%</b></div>
-            <div class="progress" style="margin-top:10px"><span id="aiBar"></span></div>
-            <button id="analyzeBtn" style="width:100%;margin-top:18px"><i data-lucide="cpu"></i> Analizar inspección</button>
+
+            <p class="small">
+              CYRA IA analiza las imágenes contra la base técnica PTI, checklist, ruta de inspección, riesgos y criterios técnicos.
+            </p>
+
+            <div class="between">
+              <span class="small" id="aiText">Listo para analizar toda la inspección</span>
+              <b id="aiPct">0%</b>
+            </div>
+
+            <div class="progress" style="margin-top:10px">
+              <span id="aiBar"></span>
+            </div>
+
+            <button id="analyzeBtn" style="width:100%;margin-top:18px">
+              <i data-lucide="cpu"></i>
+              Analizar inspección
+            </button>
 
             <div class="grid3" style="margin-top:18px">
-              <div class="card kpi"><b id="kpiImgs">0</b><span>Imágenes</span></div>
-              <div class="card kpi"><b id="kpiFindings">0</b><span>Hallazgos</span></div>
-              <div class="card kpi"><b id="kpiScore">--</b><span>Score</span></div>
+              <div class="card kpi">
+                <b id="kpiImgs">0</b>
+                <span>Imágenes</span>
+              </div>
+
+              <div class="card kpi">
+                <b id="kpiFindings">0</b>
+                <span>Hallazgos</span>
+              </div>
+
+              <div class="card kpi">
+                <b id="kpiScore">--</b>
+                <span>Score</span>
+              </div>
             </div>
 
             <div class="card pad" style="margin-top:18px;background:rgba(255,255,255,.03)">
-              <div class="between"><b>Seguridad previa</b><span class="pill warn">EPP</span></div>
-              <p class="small">Antes de realizar PTI: casco, guantes, protectores auditivos, botas punta de acero y lentes.</p>
+              <div class="between">
+                <b>Seguridad previa</b>
+                <span class="pill warn">EPP</span>
+              </div>
+
+              <p class="small">
+                Antes de realizar PTI: casco, guantes, protectores auditivos, botas punta de acero y lentes.
+              </p>
             </div>
           </div>
         </div>
@@ -171,13 +682,25 @@
             <h2>Resultados de inspección</h2>
             <p>Hallazgos agrupados por nivel y evidencia completa con daños marcados.</p>
           </div>
+
           <span class="pill" id="overallStatus">Sin evaluación</span>
         </div>
 
         <div class="grid3">
-          <div class="card kpi"><b id="overallScore">--</b><span>Score general</span></div>
-          <div class="card kpi"><b id="totalFindings">0</b><span>Hallazgos</span></div>
-          <div class="card kpi"><b id="criticalFindings">0</b><span>Críticos</span></div>
+          <div class="card kpi">
+            <b id="overallScore">--</b>
+            <span>Score general</span>
+          </div>
+
+          <div class="card kpi">
+            <b id="totalFindings">0</b>
+            <span>Hallazgos</span>
+          </div>
+
+          <div class="card kpi">
+            <b id="criticalFindings">0</b>
+            <span>Críticos</span>
+          </div>
         </div>
 
         <div class="card pad" style="margin-top:18px">
@@ -185,17 +708,37 @@
             <h3 style="margin:0">Tabla de hallazgos</h3>
             <input id="searchInput" placeholder="Buscar hallazgo, componente, riesgo..." style="max-width:340px" />
           </div>
+
           <div class="table-wrap" style="margin-top:14px">
             <table>
-              <thead><tr><th>Nivel</th><th>Componente</th><th>Hallazgo</th><th>Estado</th><th>Severidad</th><th>Riesgo</th><th>Acción</th><th>Confianza</th></tr></thead>
-              <tbody id="findingsBody"><tr><td colspan="8" class="small">Aún no hay resultados.</td></tr></tbody>
+              <thead>
+                <tr>
+                  <th>Nivel</th>
+                  <th>Componente</th>
+                  <th>Hallazgo</th>
+                  <th>Estado</th>
+                  <th>Severidad</th>
+                  <th>Riesgo</th>
+                  <th>Acción</th>
+                  <th>Confianza</th>
+                </tr>
+              </thead>
+
+              <tbody id="findingsBody">
+                <tr>
+                  <td colspan="8" class="small">Aún no hay resultados.</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
 
         <div class="card pad result-images" style="margin-top:18px">
           <h3 style="margin:0">Evidencia completa con daños marcados</h3>
-          <p class="small">La imagen se muestra completa; las cajas señalan el área detectada por CYRA.</p>
+          <p class="small">
+            La imagen se muestra completa; las cajas señalan el área detectada por CYRA.
+          </p>
+
           <div class="preview-grid" id="resultImages"></div>
         </div>
       </section>
@@ -207,16 +750,27 @@
             <p>Verificación de casco, guantes, protectores auditivos, botas punta de acero y lentes.</p>
           </div>
         </div>
+
         <div class="card pad">
           <div class="upload">
             <i data-lucide="hard-hat" style="width:42px;height:42px;color:var(--primary)"></i>
             <h3>Subir foto del operador</h3>
             <p class="small">El agente revisa cumplimiento EPP antes de la inspección.</p>
-            <button id="pickEppBtn" type="button"><i data-lucide="images"></i> Seleccionar EPP</button>
+
+            <button id="pickEppBtn" type="button">
+              <i data-lucide="images"></i>
+              Seleccionar EPP
+            </button>
+
             <input id="eppInput" type="file" accept="image/png,image/jpeg,image/webp" multiple style="display:none" />
           </div>
+
           <div class="preview-grid" id="eppPreview"></div>
-          <button id="analyzeEppBtn" style="margin-top:16px"><i data-lucide="shield-check"></i> Analizar EPP</button>
+
+          <button id="analyzeEppBtn" style="margin-top:16px">
+            <i data-lucide="shield-check"></i>
+            Analizar EPP
+          </button>
         </div>
       </section>
 
@@ -226,8 +780,13 @@
             <h2>Reporte ejecutivo</h2>
             <p>Resumen automático de la inspección.</p>
           </div>
-          <button onclick="window.print()"><i data-lucide="printer"></i> Imprimir / PDF</button>
+
+          <button onclick="window.print()">
+            <i data-lucide="printer"></i>
+            Imprimir / PDF
+          </button>
         </div>
+
         <div class="card pad" id="reportBox"></div>
       </section>
     </main>
@@ -244,18 +803,120 @@
     };
 
     const fallbackSections = [
-      { code:'SUPERIOR', zone:'Superior', score:84, status:'Operativo con observaciones', findings:[
-        {section:'SUPERIOR',zone:'Superior',component:'Panel evaporadores',hallazgo:'Panel evaporadores con pernos faltantes',estado:'DMG',severity:'Media',risk:'Puede generar vibración o pérdida de sujeción',action:'Completar pernos y validar fijación',confidence:90,damage:'MISSING',qty:1,imageIndex:0,overlay:{x:18,y:10,w:56,h:24}},
-        {section:'SUPERIOR',zone:'Superior',component:'Damper',hallazgo:'Damper con cierre irregular',estado:'Observado',severity:'Media',risk:'Puede afectar ventilación',action:'Ajustar y verificar apertura/cierre',confidence:88,damage:'DMG',qty:1,imageIndex:0,overlay:{x:8,y:10,w:18,h:18}}
-      ]},
-      { code:'MEDIA', zone:'Media', score:76, status:'Requiere limpieza', findings:[
-        {section:'MEDIA',zone:'Media',component:'Condensador',hallazgo:'Condensador con suciedad y obstrucción',estado:'Requiere limpieza',severity:'Media',risk:'Puede afectar intercambio térmico',action:'Realizar limpieza técnica',confidence:92,damage:'CONTAMINATED',qty:1,imageIndex:0,overlay:{x:19,y:36,w:35,h:39}},
-        {section:'MEDIA',zone:'Media',component:'Control Box',hallazgo:'Puerta de Control Box con sellado deficiente',estado:'Requiere reparación',severity:'Media',risk:'Ingreso de humedad al componente eléctrico',action:'Corregir sellado y revalidar',confidence:89,damage:'DMG',qty:1,imageIndex:0,overlay:{x:61,y:30,w:23,h:34}}
-      ]},
-      { code:'INFERIOR', zone:'Inferior', score:58, status:'Requiere reparación', findings:[
-        {section:'INFERIOR',zone:'Inferior',component:'Cable power',hallazgo:'Cable de alimentación con peladura visible',estado:'Crítico',severity:'Severa',risk:'Riesgo eléctrico. No energizar la unidad',action:'Reparar o reemplazar cable',confidence:95,damage:'DMG',qty:1,imageIndex:0,overlay:{x:15,y:74,w:22,h:16}},
-        {section:'INFERIOR',zone:'Inferior',component:'Plug',hallazgo:'Enchufe con quemadura superficial',estado:'Crítico',severity:'Severa',risk:'Posible corto o falso contacto',action:'Reemplazar enchufe reefer',confidence:91,damage:'BURNED',qty:1,imageIndex:0,overlay:{x:17,y:80,w:14,h:10}}
-      ]}
+      {
+        code: 'SUPERIOR',
+        zone: 'Superior',
+        score: 84,
+        status: 'Operativo con observaciones',
+        findings: [
+          {
+            section: 'SUPERIOR',
+            zone: 'Superior',
+            component: 'Panel evaporadores',
+            hallazgo: 'Panel evaporadores con pernos faltantes',
+            estado: 'DMG',
+            severity: 'Media',
+            risk: 'Puede generar vibración o pérdida de sujeción',
+            action: 'Completar pernos y validar fijación',
+            confidence: 90,
+            damage: 'MISSING',
+            qty: 1,
+            imageIndex: 0,
+            overlay: { x: 18, y: 10, w: 56, h: 24 }
+          },
+          {
+            section: 'SUPERIOR',
+            zone: 'Superior',
+            component: 'Damper',
+            hallazgo: 'Damper con cierre irregular',
+            estado: 'Observado',
+            severity: 'Media',
+            risk: 'Puede afectar ventilación',
+            action: 'Ajustar y verificar apertura/cierre',
+            confidence: 88,
+            damage: 'DMG',
+            qty: 1,
+            imageIndex: 0,
+            overlay: { x: 8, y: 10, w: 18, h: 18 }
+          }
+        ]
+      },
+      {
+        code: 'MEDIA',
+        zone: 'Media',
+        score: 76,
+        status: 'Requiere limpieza',
+        findings: [
+          {
+            section: 'MEDIA',
+            zone: 'Media',
+            component: 'Condensador',
+            hallazgo: 'Condensador con suciedad y obstrucción',
+            estado: 'Requiere limpieza',
+            severity: 'Media',
+            risk: 'Puede afectar intercambio térmico',
+            action: 'Realizar limpieza técnica',
+            confidence: 92,
+            damage: 'CONTAMINATED',
+            qty: 1,
+            imageIndex: 0,
+            overlay: { x: 19, y: 36, w: 35, h: 39 }
+          },
+          {
+            section: 'MEDIA',
+            zone: 'Media',
+            component: 'Control Box',
+            hallazgo: 'Puerta de Control Box con sellado deficiente',
+            estado: 'Requiere reparación',
+            severity: 'Media',
+            risk: 'Ingreso de humedad al componente eléctrico',
+            action: 'Corregir sellado y revalidar',
+            confidence: 89,
+            damage: 'DMG',
+            qty: 1,
+            imageIndex: 0,
+            overlay: { x: 61, y: 30, w: 23, h: 34 }
+          }
+        ]
+      },
+      {
+        code: 'INFERIOR',
+        zone: 'Inferior',
+        score: 58,
+        status: 'Requiere reparación',
+        findings: [
+          {
+            section: 'INFERIOR',
+            zone: 'Inferior',
+            component: 'Cable power',
+            hallazgo: 'Cable de alimentación con peladura visible',
+            estado: 'Crítico',
+            severity: 'Severa',
+            risk: 'Riesgo eléctrico. No energizar la unidad',
+            action: 'Reparar o reemplazar cable',
+            confidence: 95,
+            damage: 'DMG',
+            qty: 1,
+            imageIndex: 0,
+            overlay: { x: 15, y: 74, w: 22, h: 16 }
+          },
+          {
+            section: 'INFERIOR',
+            zone: 'Inferior',
+            component: 'Plug',
+            hallazgo: 'Enchufe con quemadura superficial',
+            estado: 'Crítico',
+            severity: 'Severa',
+            risk: 'Posible corto o falso contacto',
+            action: 'Reemplazar enchufe reefer',
+            confidence: 91,
+            damage: 'BURNED',
+            qty: 1,
+            imageIndex: 0,
+            overlay: { x: 17, y: 80, w: 14, h: 10 }
+          }
+        ]
+      }
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -264,280 +925,589 @@
       renderAll();
     });
 
-    function bind(){
+    function bind() {
       document.getElementById('loginForm').addEventListener('submit', e => {
         e.preventDefault();
-        document.getElementById('loginView').style.display='none';
-        document.getElementById('appView').style.display='block';
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('appView').style.display = 'block';
         lucide.createIcons();
       });
 
-      document.querySelectorAll('.nav button').forEach(btn=>{
-        btn.addEventListener('click',()=>switchView(btn.dataset.view));
+      document.querySelectorAll('.nav button').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
       });
 
-      document.getElementById('pickBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
-      document.getElementById('fileInput').addEventListener('change',e=>addFiles(e.target.files));
-      document.getElementById('demoBtn').addEventListener('click',loadDemo);
-      document.getElementById('clearBtn').addEventListener('click',clearInspection);
-      document.getElementById('analyzeBtn').addEventListener('click',analyzeInspection);
-      document.getElementById('searchInput').addEventListener('input',renderResults);
+      document.getElementById('pickBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+      });
+
+      document.getElementById('fileInput').addEventListener('change', e => {
+        addFiles(e.target.files);
+      });
+
+      document.getElementById('demoBtn').addEventListener('click', loadDemo);
+      document.getElementById('clearBtn').addEventListener('click', clearInspection);
+      document.getElementById('analyzeBtn').addEventListener('click', analyzeInspection);
+
+      document.getElementById('searchInput').addEventListener('input', renderResults);
 
       const dz = document.getElementById('dropZone');
-      dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--primary)'});
-      dz.addEventListener('dragleave',()=>dz.style.borderColor='rgba(56,189,248,.42)');
-      dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='rgba(56,189,248,.42)';addFiles(e.dataTransfer.files)});
 
-      document.getElementById('pickEppBtn').addEventListener('click',()=>document.getElementById('eppInput').click());
-      document.getElementById('eppInput').addEventListener('change',e=>addEppFiles(e.target.files));
-      document.getElementById('analyzeEppBtn').addEventListener('click',analyzeEpp);
+      dz.addEventListener('dragover', e => {
+        e.preventDefault();
+        dz.style.borderColor = 'var(--primary)';
+      });
+
+      dz.addEventListener('dragleave', () => {
+        dz.style.borderColor = 'rgba(56,189,248,.42)';
+      });
+
+      dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.style.borderColor = 'rgba(56,189,248,.42)';
+        addFiles(e.dataTransfer.files);
+      });
+
+      document.getElementById('pickEppBtn').addEventListener('click', () => {
+        document.getElementById('eppInput').click();
+      });
+
+      document.getElementById('eppInput').addEventListener('change', e => {
+        addEppFiles(e.target.files);
+      });
+
+      document.getElementById('analyzeEppBtn').addEventListener('click', analyzeEpp);
     }
 
-    function switchView(id){
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    function switchView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+
+      document.querySelectorAll('.nav button').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === id);
+      });
+
       renderAll();
       lucide.createIcons();
     }
 
-    function addFiles(files){
-      const allowed = ['image/jpeg','image/png','image/webp'];
-      let list = Array.from(files).filter(f=>allowed.includes(f.type));
-      if(!list.length) return toast('Solo se permiten JPG, PNG o WEBP.');
-      const remaining = Math.max(0,10-state.images.length);
-      if(list.length>remaining){list=list.slice(0,remaining);toast('Máximo 10 imágenes.');}
-      list.forEach(file=>{
+    function addFiles(files) {
+      const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+      let list = Array.from(files).filter(f => allowed.includes(f.type));
+
+      if (!list.length) {
+        return toast('Solo se permiten JPG, PNG o WEBP.');
+      }
+
+      const remaining = Math.max(0, 10 - state.images.length);
+
+      if (list.length > remaining) {
+        list = list.slice(0, remaining);
+        toast('Máximo 10 imágenes.');
+      }
+
+      list.forEach(file => {
         const reader = new FileReader();
+
         reader.onload = e => {
-          state.images.push({id:Date.now()+Math.random(),name:file.name,src:e.target.result,detections:[]});
+          state.images.push({
+            id: Date.now() + Math.random(),
+            name: file.name,
+            src: e.target.result,
+            detections: []
+          });
+
           state.results = null;
           renderAll();
         };
+
         reader.readAsDataURL(file);
       });
-      document.getElementById('fileInput').value='';
+
+      document.getElementById('fileInput').value = '';
     }
 
-    function addEppFiles(files){
-      const allowed = ['image/jpeg','image/png','image/webp'];
-      Array.from(files).filter(f=>allowed.includes(f.type)).slice(0,5).forEach(file=>{
-        const reader = new FileReader();
-        reader.onload = e => {
-          state.eppImages.push({id:Date.now()+Math.random(),name:file.name,src:e.target.result,detections:[]});
-          renderEpp();
-        };
-        reader.readAsDataURL(file);
-      });
-      document.getElementById('eppInput').value='';
+    function addEppFiles(files) {
+      const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+      Array.from(files)
+        .filter(f => allowed.includes(f.type))
+        .slice(0, 5)
+        .forEach(file => {
+          const reader = new FileReader();
+
+          reader.onload = e => {
+            state.eppImages.push({
+              id: Date.now() + Math.random(),
+              name: file.name,
+              src: e.target.result,
+              detections: []
+            });
+
+            renderEpp();
+          };
+
+          reader.readAsDataURL(file);
+        });
+
+      document.getElementById('eppInput').value = '';
     }
 
-    function clearInspection(){
-      state.images=[];state.results=null;renderAll();toast('Inspección limpiada.');
+    function clearInspection() {
+      state.images = [];
+      state.results = null;
+      renderAll();
+      toast('Inspección limpiada.');
     }
 
-    function removeImage(id){
-      state.images = state.images.filter(img=>String(img.id)!==String(id));
+    function removeImage(id) {
+      state.images = state.images.filter(img => String(img.id) !== String(id));
       state.results = null;
       renderAll();
     }
 
-    function loadDemo(){
-      if(state.images.length>=1) return toast('Ya hay imágenes cargadas.');
-      const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='720'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#e5edf7'/><stop offset='1' stop-color='#cad8e8'/></linearGradient><linearGradient id='b' x1='0' x2='1'><stop stop-color='#0F4C81'/><stop offset='1' stop-color='#0a2d58'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><rect x='100' y='45' width='800' height='620' rx='12' fill='#f8fbff' stroke='#cbd5e1' stroke-width='4'/><g opacity='.35'>${Array.from({length:300}).map((_,i)=>`<circle cx='${130+(i%24)*32}' cy='${70+Math.floor(i/24)*36}' r='2' fill='#0f172a'/>`).join('')}</g><rect x='220' y='285' width='560' height='245' rx='16' fill='url(#b)'/><circle cx='410' cy='405' r='82' fill='#102030' stroke='rgba(255,255,255,.18)' stroke-width='8'/><rect x='620' y='310' width='120' height='150' rx='8' fill='#17395f'/><rect x='175' y='150' width='125' height='105' rx='8' fill='none' stroke='#cbd5e1' stroke-width='5'/><rect x='560' y='150' width='140' height='120' rx='8' fill='none' stroke='#cbd5e1' stroke-width='5'/><rect x='275' y='545' width='130' height='75' rx='8' fill='#dbe7f4'/><rect x='430' y='550' width='150' height='70' rx='8' fill='#244262'/><text x='500' y='105' text-anchor='middle' fill='#31506e' font-family='Arial' font-size='30'>CYRA Demo Reefer</text></svg>`);
-      state.images.push({id:Date.now()+Math.random(),name:'demo_reefer_full.png',src:`data:image/svg+xml;charset=utf-8,${svg}`,detections:[]});
+    function loadDemo() {
+      if (state.images.length >= 1) {
+        return toast('Ya hay imágenes cargadas.');
+      }
+
+      const svg = encodeURIComponent(`
+        <svg xmlns='http://www.w3.org/2000/svg' width='1000' height='720'>
+          <defs>
+            <linearGradient id='g' x1='0' x2='1'>
+              <stop stop-color='#e5edf7'/>
+              <stop offset='1' stop-color='#cad8e8'/>
+            </linearGradient>
+            <linearGradient id='b' x1='0' x2='1'>
+              <stop stop-color='#0F4C81'/>
+              <stop offset='1' stop-color='#0a2d58'/>
+            </linearGradient>
+          </defs>
+          <rect width='100%' height='100%' fill='url(#g)'/>
+          <rect x='100' y='45' width='800' height='620' rx='12' fill='#f8fbff' stroke='#cbd5e1' stroke-width='4'/>
+          <rect x='220' y='285' width='560' height='245' rx='16' fill='url(#b)'/>
+          <circle cx='410' cy='405' r='82' fill='#102030' stroke='rgba(255,255,255,.18)' stroke-width='8'/>
+          <rect x='620' y='310' width='120' height='150' rx='8' fill='#17395f'/>
+          <rect x='175' y='150' width='125' height='105' rx='8' fill='none' stroke='#cbd5e1' stroke-width='5'/>
+          <rect x='560' y='150' width='140' height='120' rx='8' fill='none' stroke='#cbd5e1' stroke-width='5'/>
+          <rect x='275' y='545' width='130' height='75' rx='8' fill='#dbe7f4'/>
+          <rect x='430' y='550' width='150' height='70' rx='8' fill='#244262'/>
+          <text x='500' y='105' text-anchor='middle' fill='#31506e' font-family='Arial' font-size='30'>CYRA Demo Reefer</text>
+        </svg>
+      `);
+
+      state.images.push({
+        id: Date.now() + Math.random(),
+        name: 'demo_reefer_full.png',
+        src: `data:image/svg+xml;charset=utf-8,${svg}`,
+        detections: []
+      });
+
       renderAll();
       toast('Demo cargado.');
     }
 
-    async function analyzeInspection(){
-      if(!state.images.length) return toast('Primero sube al menos una imagen.');
-      setAI(0,'Enviando imágenes al agente Gemini','Gemini');
-      let pct=0;
-      const timer = setInterval(()=>{
-        pct=Math.min(92,pct+8);
-        setAI(pct,pct>60?'Marcando daños sobre imagen completa':pct>25?'Clasificando por superior, media e inferior':'Analizando evidencias','Gemini');
-      },230);
+    async function analyzeInspection() {
+      if (!state.images.length) {
+        return toast('Primero sube al menos una imagen.');
+      }
 
-      try{
-        const response = await fetch('/api/analyze-inspection',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            images:state.images.map(img=>({id:img.id,name:img.name,dataUrl:img.src})),
-            sections:[
-              {id:'superior',code:'SUPERIOR',zone:'Superior'},
-              {id:'media',code:'MEDIA',zone:'Media'},
-              {id:'inferior',code:'INFERIOR',zone:'Inferior'}
+      setAI(0, 'Enviando imágenes al agente CYRA IA', 'CYRA IA');
+
+      let pct = 0;
+
+      const timer = setInterval(() => {
+        pct = Math.min(92, pct + 8);
+
+        setAI(
+          pct,
+          pct > 60
+            ? 'Marcando daños sobre imagen completa'
+            : pct > 25
+              ? 'Clasificando por superior, media e inferior'
+              : 'Analizando evidencias',
+          'CYRA IA'
+        );
+      }, 230);
+
+      try {
+        const response = await fetch('/api/analyze-inspection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            images: state.images.map(img => ({
+              id: img.id,
+              name: img.name,
+              dataUrl: img.src
+            })),
+            sections: [
+              { id: 'superior', code: 'SUPERIOR', zone: 'Superior' },
+              { id: 'media', code: 'MEDIA', zone: 'Media' },
+              { id: 'inferior', code: 'INFERIOR', zone: 'Inferior' }
             ]
           })
         });
+
         const data = await response.json();
-        if(!response.ok) throw new Error(data.error || 'Error Gemini');
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error del motor CYRA IA');
+        }
+
         applyResults(data);
-        setAI(100,data.source && data.source.startsWith('fallback')?'Resultado con respaldo local':'Resultado generado con Gemini','Completado');
-      }catch(err){
+
+        setAI(
+          100,
+          data.source && data.source.startsWith('fallback')
+            ? 'Resultado generado con respaldo técnico local'
+            : 'Resultado generado con CYRA IA',
+          'Completado'
+        );
+      } catch (err) {
         console.error(err);
         applyResults(localFallback());
-        setAI(100,'Gemini no respondió. Se usó respaldo local.','Completado');
-      }finally{
+        setAI(100, 'CYRA IA no pudo completar el análisis. Se usó respaldo técnico local.', 'Completado');
+      } finally {
         clearInterval(timer);
         renderAll();
         toast('Inspección analizada. Abriendo resultados.');
-        setTimeout(()=>switchView('resultsView'),500);
+
+        setTimeout(() => switchView('resultsView'), 500);
       }
     }
 
-    async function analyzeEpp(){
-      if(!state.eppImages.length) return toast('Sube al menos una foto EPP.');
-      try{
-        const response = await fetch('/api/analyze-epp',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({images:state.eppImages.map(img=>({id:img.id,name:img.name,dataUrl:img.src}))})
+    async function analyzeEpp() {
+      if (!state.eppImages.length) {
+        return toast('Sube al menos una foto EPP.');
+      }
+
+      try {
+        const response = await fetch('/api/analyze-epp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            images: state.eppImages.map(img => ({
+              id: img.id,
+              name: img.name,
+              dataUrl: img.src
+            }))
+          })
         });
+
         const data = await response.json();
-        state.eppResults=data;
-        state.eppImages.forEach((img,idx)=>img.detections=(data.detectionsByImage?.[idx]||data.findings?.filter(f=>f.imageIndex===idx)||[]));
+
+        state.eppResults = data;
+
+        state.eppImages.forEach((img, idx) => {
+          img.detections =
+            data.detectionsByImage?.[idx] ||
+            data.findings?.filter(f => f.imageIndex === idx) ||
+            [];
+        });
+
         renderEpp();
         toast('EPP analizado.');
-      }catch(e){
+      } catch (e) {
         toast('No se pudo analizar EPP.');
       }
     }
 
-    function setAI(pct,text,status){
-      document.getElementById('aiBar').style.width=pct+'%';
-      document.getElementById('aiPct').textContent=pct+'%';
-      document.getElementById('aiText').textContent=text;
-      const pill=document.getElementById('aiStatus');
-      pill.textContent=status;
-      pill.className='pill '+(status==='Completado'?'ok':'');
+    function setAI(pct, text, status) {
+      document.getElementById('aiBar').style.width = pct + '%';
+      document.getElementById('aiPct').textContent = pct + '%';
+      document.getElementById('aiText').textContent = text;
+
+      const pill = document.getElementById('aiStatus');
+
+      pill.textContent = status;
+      pill.className = 'pill ' + (status === 'Completado' ? 'ok' : '');
     }
 
-    function applyResults(data){
-      const sections = data.sections && data.sections.length ? data.sections : groupByLevel(data.findings||[]);
-      const findings = sections.flatMap(s=>(s.findings||[]).map(f=>({...f,section:f.section||s.code,zone:f.zone||s.zone})));
-      state.images.forEach((img,idx)=>img.detections = findings.filter(f=>Number(f.imageIndex||0)===idx));
+    function applyResults(data) {
+      const sections =
+        data.sections && data.sections.length
+          ? data.sections
+          : groupByLevel(data.findings || []);
+
+      const findings = sections.flatMap(s =>
+        (s.findings || []).map(f => ({
+          ...f,
+          section: f.section || s.code,
+          zone: f.zone || s.zone
+        }))
+      );
+
+      state.images.forEach((img, idx) => {
+        img.detections = findings.filter(f => Number(f.imageIndex || 0) === idx);
+      });
+
       state.results = {
-        score:data.score ?? avg(sections.map(s=>s.score||scoreFromFindings(s.findings||[]))),
-        status:data.status || statusFromScore(data.score ?? 80),
+        score: data.score ?? avg(sections.map(s => s.score || scoreFromFindings(s.findings || []))),
+        status: data.status || statusFromScore(data.score ?? 80),
         sections,
         findings
       };
     }
 
-    function localFallback(){
+    function localFallback() {
       const sections = JSON.parse(JSON.stringify(fallbackSections));
-      sections.forEach((sec,levelIdx)=>{
-        sec.findings.forEach((f,idx)=>f.imageIndex=Math.min((idx+levelIdx)%Math.max(1,state.images.length),state.images.length-1));
+
+      sections.forEach((sec, levelIdx) => {
+        sec.findings.forEach((f, idx) => {
+          f.imageIndex = Math.min(
+            (idx + levelIdx) % Math.max(1, state.images.length),
+            state.images.length - 1
+          );
+        });
       });
-      const findings = sections.flatMap(s=>s.findings);
-      return {source:'local-fallback',score:avg(sections.map(s=>s.score)),status:'Operativo con observaciones',sections,findings};
+
+      const findings = sections.flatMap(s => s.findings);
+
+      return {
+        source: 'local-fallback',
+        score: avg(sections.map(s => s.score)),
+        status: 'Operativo con observaciones',
+        sections,
+        findings
+      };
     }
 
-    function groupByLevel(findings){
-      const levels=['SUPERIOR','MEDIA','INFERIOR'];
-      return levels.map(level=>({code:level,zone:level,findings:findings.filter(f=>String(f.section||f.zone||'MEDIA').toUpperCase().includes(level))})).filter(s=>s.findings.length);
+    function groupByLevel(findings) {
+      const levels = ['SUPERIOR', 'MEDIA', 'INFERIOR'];
+
+      return levels
+        .map(level => ({
+          code: level,
+          zone: level,
+          findings: findings.filter(f =>
+            String(f.section || f.zone || 'MEDIA').toUpperCase().includes(level)
+          )
+        }))
+        .filter(s => s.findings.length);
     }
 
-    function renderAll(){
+    function renderAll() {
       document.getElementById('countPill').textContent = `${state.images.length} imágenes`;
       document.getElementById('kpiImgs').textContent = state.images.length;
       document.getElementById('kpiFindings').textContent = state.results?.findings?.length || 0;
       document.getElementById('kpiScore').textContent = state.results?.score ?? '--';
+
       renderPreviews();
       renderResults();
       renderEpp();
       renderReport();
+
       lucide.createIcons();
     }
 
-    function renderPreviews(){
-      const box=document.getElementById('previewGrid');
-      box.innerHTML = state.images.length ? state.images.map((img,idx)=>previewCard(img,idx,true)).join('') : '<div class="card pad"><p class="small">No hay imágenes cargadas.</p></div>';
+    function renderPreviews() {
+      const box = document.getElementById('previewGrid');
+
+      box.innerHTML = state.images.length
+        ? state.images.map((img, idx) => previewCard(img, idx, true)).join('')
+        : '<div class="card pad"><p class="small">No hay imágenes cargadas.</p></div>';
     }
 
-    function renderResults(){
-      const res=state.results;
-      const findings=res?.findings||[];
-      const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
-      const filtered=findings.filter(f=>Object.values(f).join(' ').toLowerCase().includes(q));
-      document.getElementById('overallScore').textContent=res?.score ?? '--';
-      document.getElementById('totalFindings').textContent=findings.length;
-      document.getElementById('criticalFindings').textContent=findings.filter(f=>f.estado==='Crítico').length;
-      const status=document.getElementById('overallStatus');
-      status.textContent=res?.status||'Sin evaluación';
-      status.className='pill '+tone(res?.score);
+    function renderResults() {
+      const res = state.results;
+      const findings = res?.findings || [];
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
 
-      const rows=[];
-      ['SUPERIOR','MEDIA','INFERIOR'].forEach(level=>{
-        const group=filtered.filter(f=>String(f.section||f.zone||'').toUpperCase().includes(level));
-        if(group.length){
+      const filtered = findings.filter(f =>
+        Object.values(f).join(' ').toLowerCase().includes(q)
+      );
+
+      document.getElementById('overallScore').textContent = res?.score ?? '--';
+      document.getElementById('totalFindings').textContent = findings.length;
+      document.getElementById('criticalFindings').textContent =
+        findings.filter(f => f.estado === 'Crítico').length;
+
+      const status = document.getElementById('overallStatus');
+
+      status.textContent = res?.status || 'Sin evaluación';
+      status.className = 'pill ' + tone(res?.score);
+
+      const rows = [];
+
+      ['SUPERIOR', 'MEDIA', 'INFERIOR'].forEach(level => {
+        const group = filtered.filter(f =>
+          String(f.section || f.zone || '').toUpperCase().includes(level)
+        );
+
+        if (group.length) {
           rows.push(`<tr><td class="level-title" colspan="8">${level}</td></tr>`);
-          group.forEach(f=>rows.push(`<tr><td>${f.section||f.zone}</td><td>${f.component||''}</td><td>${f.hallazgo||''}</td><td><span class="pill ${stateTone(f.estado)}">${f.estado||''}</span></td><td>${f.severity||''}</td><td>${f.risk||''}</td><td>${f.action||''}</td><td>${f.confidence||''}%</td></tr>`));
+
+          group.forEach(f => {
+            rows.push(`
+              <tr>
+                <td>${f.section || f.zone}</td>
+                <td>${f.component || ''}</td>
+                <td>${f.hallazgo || ''}</td>
+                <td><span class="pill ${stateTone(f.estado)}">${f.estado || ''}</span></td>
+                <td>${f.severity || ''}</td>
+                <td>${f.risk || ''}</td>
+                <td>${f.action || ''}</td>
+                <td>${f.confidence || ''}%</td>
+              </tr>
+            `);
+          });
         }
       });
-      document.getElementById('findingsBody').innerHTML=rows.length?rows.join(''):'<tr><td colspan="8" class="small">Aún no hay resultados.</td></tr>';
 
-      const resultBox=document.getElementById('resultImages');
-      resultBox.innerHTML = state.images.length ? state.images.map((img,idx)=>previewCard(img,idx,false)).join('') : '<div class="card pad"><p class="small">No hay evidencias.</p></div>';
+      document.getElementById('findingsBody').innerHTML =
+        rows.length
+          ? rows.join('')
+          : '<tr><td colspan="8" class="small">Aún no hay resultados.</td></tr>';
+
+      const resultBox = document.getElementById('resultImages');
+
+      resultBox.innerHTML = state.images.length
+        ? state.images.map((img, idx) => previewCard(img, idx, false)).join('')
+        : '<div class="card pad"><p class="small">No hay evidencias.</p></div>';
     }
 
-    function renderEpp(){
-      const box=document.getElementById('eppPreview');
-      box.innerHTML=state.eppImages.length?state.eppImages.map((img,idx)=>previewCard(img,idx,false)).join(''):'<div class="card pad"><p class="small">No hay fotos EPP.</p></div>';
+    function renderEpp() {
+      const box = document.getElementById('eppPreview');
+
+      box.innerHTML = state.eppImages.length
+        ? state.eppImages.map((img, idx) => previewCard(img, idx, false)).join('')
+        : '<div class="card pad"><p class="small">No hay fotos EPP.</p></div>';
     }
 
-    function renderReport(){
-      const res=state.results;
-      const findings=res?.findings||[];
+    function renderReport() {
+      const res = state.results;
+      const findings = res?.findings || [];
+
       document.getElementById('reportBox').innerHTML = `
         <h3 style="margin-top:0">Resumen CYRA Reefer Vision</h3>
+
         <div class="grid3">
-          <div class="card kpi"><b>${res?.score ?? '--'}</b><span>Score</span></div>
-          <div class="card kpi"><b>${findings.length}</b><span>Hallazgos</span></div>
-          <div class="card kpi"><b>${findings.filter(f=>f.estado==='Crítico').length}</b><span>Críticos</span></div>
+          <div class="card kpi">
+            <b>${res?.score ?? '--'}</b>
+            <span>Score</span>
+          </div>
+
+          <div class="card kpi">
+            <b>${findings.length}</b>
+            <span>Hallazgos</span>
+          </div>
+
+          <div class="card kpi">
+            <b>${findings.filter(f => f.estado === 'Crítico').length}</b>
+            <span>Críticos</span>
+          </div>
         </div>
+
         <p class="small">Estado: <b>${res?.status || 'Sin evaluación'}</b></p>
-        <p class="small">El análisis clasifica automáticamente los hallazgos por superior, media e inferior y marca daños sobre la imagen completa.</p>`;
+
+        <p class="small">
+          El análisis clasifica automáticamente los hallazgos por superior, media e inferior y marca daños sobre la imagen completa.
+        </p>
+      `;
     }
 
-    function previewCard(img,idx,allowDelete){
-      const detections=img.detections||[];
-      return `<div class="preview-card">
-        <div class="img-wrap">
-          <img src="${img.src}" alt="${img.name}">
-          ${detections.map(d=>box(d)).join('')}
+    function previewCard(img, idx, allowDelete) {
+      const detections = img.detections || [];
+
+      return `
+        <div class="preview-card">
+          <div class="img-wrap">
+            <img src="${img.src}" alt="${img.name}">
+            ${detections.map(d => box(d)).join('')}
+          </div>
+
+          <div class="preview-info">
+            <div>
+              <b>${img.name}</b>
+              <div class="small">${detections.length} marcas detectadas</div>
+            </div>
+
+            ${
+              allowDelete
+                ? `<button class="danger" onclick="removeImage('${img.id}')"><i data-lucide="x"></i></button>`
+                : ''
+            }
+          </div>
         </div>
-        <div class="preview-info">
-          <div><b>${img.name}</b><div class="small">${detections.length} marcas detectadas</div></div>
-          ${allowDelete?`<button class="danger" onclick="removeImage('${img.id}')"><i data-lucide="x"></i></button>`:''}
+      `;
+    }
+
+    function box(d) {
+      const o = normOverlay(d.overlay);
+      const cls = d.estado === 'OK' ? 'ok' : d.estado === 'Crítico' ? '' : 'warn';
+
+      return `
+        <div class="box ${cls}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%">
+          <span class="tag">${d.section || d.zone || ''} · ${d.component || 'Daño'} · ${d.estado || ''}</span>
         </div>
-      </div>`;
+      `;
     }
 
-    function box(d){
-      const o=normOverlay(d.overlay);
-      const cls=d.estado==='OK'?'ok':d.estado==='Crítico'?'':'warn';
-      return `<div class="box ${cls}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%"><span class="tag">${d.section||d.zone||''} · ${d.component||'Daño'} · ${d.estado||''}</span></div>`;
+    function normOverlay(o = {}) {
+      return {
+        x: clamp(o.x ?? 20, 0, 85),
+        y: clamp(o.y ?? 20, 0, 85),
+        w: clamp(o.w ?? 30, 8, 75),
+        h: clamp(o.h ?? 20, 8, 75)
+      };
     }
 
-    function normOverlay(o={}){
-      return {x:clamp(o.x??20,0,85),y:clamp(o.y??20,0,85),w:clamp(o.w??30,8,75),h:clamp(o.h??20,8,75)};
+    function scoreFromFindings(findings) {
+      let score = 100;
+
+      findings.forEach(f => {
+        if (f.estado === 'Crítico') score -= 25;
+        else if (f.estado === 'Requiere reparación' || f.estado === 'DMG') score -= 14;
+        else if (f.estado === 'Requiere limpieza') score -= 10;
+        else if (f.estado === 'Observado') score -= 8;
+      });
+
+      return clamp(score, 15, 100);
     }
 
-    function scoreFromFindings(findings){
-      let score=100;
-      findings.forEach(f=>{if(f.estado==='Crítico')score-=25;else if(f.estado==='Requiere reparación'||f.estado==='DMG')score-=14;else if(f.estado==='Requiere limpieza')score-=10;else if(f.estado==='Observado')score-=8;});
-      return clamp(score,15,100);
+    function statusFromScore(s) {
+      return s >= 90
+        ? 'Operativo'
+        : s >= 70
+          ? 'Operativo con observaciones'
+          : s >= 50
+            ? 'Requiere reparación'
+            : 'Requiere PTI';
     }
-    function statusFromScore(s){return s>=90?'Operativo':s>=70?'Operativo con observaciones':s>=50?'Requiere reparación':'Requiere PTI'}
-    function tone(s){return s==null?'':s>=90?'ok':s>=70?'warn':'bad'}
-    function stateTone(s){return s==='OK'?'ok':s==='Crítico'?'bad':'warn'}
-    function avg(arr){return arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0}
-    function clamp(n,min,max){n=Number(n);return Math.max(min,Math.min(max,Number.isFinite(n)?Math.round(n):min))}
-    function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
+
+    function tone(s) {
+      return s == null ? '' : s >= 90 ? 'ok' : s >= 70 ? 'warn' : 'bad';
+    }
+
+    function stateTone(s) {
+      return s === 'OK' ? 'ok' : s === 'Crítico' ? 'bad' : 'warn';
+    }
+
+    function avg(arr) {
+      return arr.length
+        ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+        : 0;
+    }
+
+    function clamp(n, min, max) {
+      n = Number(n);
+      return Math.max(min, Math.min(max, Number.isFinite(n) ? Math.round(n) : min));
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+
+      t.textContent = msg;
+      t.style.display = 'block';
+
+      setTimeout(() => {
+        t.style.display = 'none';
+      }, 2600);
+    }
   </script>
 </body>
 </html>
