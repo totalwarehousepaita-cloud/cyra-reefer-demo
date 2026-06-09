@@ -14,11 +14,6 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 app.use(express.json({ limit: '35mb' }));
 
-// Funciona si subiste archivos sueltos:
-// index.html, knowledge_base.json, system_prompt.txt
-// Y también funciona si luego usas carpetas:
-// public/index.html, data/knowledge_base.json, data/system_prompt.txt
-
 const INDEX_PATHS = [
   path.join(__dirname, 'index.html'),
   path.join(__dirname, 'public', 'index.html')
@@ -34,68 +29,27 @@ const PROMPT_PATHS = [
   path.join(__dirname, 'data', 'system_prompt.txt')
 ];
 
-function firstExisting(paths) {
-  return paths.find((p) => fs.existsSync(p));
-}
-
-function readText(paths, fallback = '') {
-  const file = firstExisting(paths);
-
-  if (!file) return fallback;
-
-  try {
-    return fs.readFileSync(file, 'utf8');
-  } catch (error) {
-    console.warn('No se pudo leer archivo:', file, error.message);
-    return fallback;
-  }
-}
-
-function readJson(paths, fallback = {}) {
-  const file = firstExisting(paths);
-
-  if (!file) return fallback;
-
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch (error) {
-    console.warn('No se pudo leer JSON:', file, error.message);
-    return fallback;
-  }
-}
-
 const KNOWLEDGE = readJson(KNOWLEDGE_PATHS, {
   app: 'CYRA Reefer Vision',
-  ptiLevels: ['Datos', 'Superior', 'Media', 'Inferior'],
-  requiredPPE: [
-    'Casco',
-    'Guantes',
-    'Protectores auditivos',
-    'Botas punta de acero',
-    'Lentes'
-  ],
-  reeferRisks: [
-    'Electrocución',
-    'Golpes y caídas',
-    'Quemaduras',
-    'Lesiones oculares'
-  ],
-  note: 'Base documental fallback. Suba knowledge_base.json para usar reglas completas.'
+  ptiLevels: ['SUPERIOR', 'MEDIA', 'INFERIOR'],
+  requiredPPE: ['Casco', 'Guantes', 'Protectores auditivos', 'Botas punta de acero', 'Lentes'],
+  reeferRisks: ['Electrocución', 'Golpes y caídas', 'Quemaduras', 'Lesiones oculares'],
+  ptiRules: [
+    'El PTI se realiza para garantizar el correcto funcionamiento de la unidad reefer.',
+    'Superior: panel evaporadores, pernos, tuercas y damper de ventilación.',
+    'Media: condensador, control box, contactores, resistencias, software, RCD, tuberías y compresor.',
+    'Inferior: cable power, plug, guardacable, manguera de drenaje, base compresor y motor condensador.'
+  ]
 });
 
 const SYSTEM_PROMPT = readText(
   PROMPT_PATHS,
-  'Eres CYRA Reefer Vision. Analiza inspecciones PTI de contenedores reefer por nivel superior, medio e inferior, EPP y riesgos. Responde solo JSON válido.'
+  'Eres CYRA Reefer Vision. Analiza imágenes PTI de contenedores reefer, clasifica hallazgos por SUPERIOR, MEDIA e INFERIOR, marca daños con overlays y responde solo JSON válido.'
 );
 
-// Sirve archivos estáticos desde raíz y desde /public si existe
 app.use(express.static(__dirname));
-
 const publicPath = path.join(__dirname, 'public');
-
-if (fs.existsSync(publicPath)) {
-  app.use(express.static(publicPath));
-}
+if (fs.existsSync(publicPath)) app.use(express.static(publicPath));
 
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -109,36 +63,27 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.post('/api/analyze-section', async (req, res) => {
-  const { section, images = [], checklist = [] } = req.body || {};
+app.post('/api/analyze-inspection', async (req, res) => {
+  const { images = [], sections = [] } = req.body || {};
 
   try {
-    if (!section || !Array.isArray(images) || images.length === 0) {
-      return res.status(400).json({
-        error: 'Debe enviar section e images.'
-      });
+    if (!Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'Debe enviar images.' });
     }
 
     if (!GEMINI_API_KEY) {
-      return res.json({
-        source: 'fallback-no-api-key',
-        ...fallbackSection(section, images, checklist)
-      });
+      return res.json({ source: 'fallback-no-api-key', ...fallbackInspection(images) });
     }
 
-    const result = await callGeminiForSection(section, images, checklist);
-
-    return res.json({
-      source: 'gemini',
-      ...normalizeSectionResult(result, section, images)
-    });
+    const result = await callGeminiInspection(images, sections);
+    const normalized = normalizeInspection(result, images);
+    return res.json({ source: 'gemini', ...normalized });
   } catch (error) {
-    console.error('Gemini section error:', error);
-
+    console.error('Gemini inspection error:', error);
     return res.json({
       source: 'fallback-error',
       error: error.message,
-      ...fallbackSection(section, images, checklist)
+      ...fallbackInspection(images)
     });
   }
 });
@@ -148,27 +93,18 @@ app.post('/api/analyze-epp', async (req, res) => {
 
   try {
     if (!Array.isArray(images) || images.length === 0) {
-      return res.status(400).json({
-        error: 'Debe enviar images.'
-      });
+      return res.status(400).json({ error: 'Debe enviar images.' });
     }
 
     if (!GEMINI_API_KEY) {
-      return res.json({
-        source: 'fallback-no-api-key',
-        ...fallbackEPP(images)
-      });
+      return res.json({ source: 'fallback-no-api-key', ...fallbackEPP(images) });
     }
 
-    const result = await callGeminiForEPP(images);
-
-    return res.json({
-      source: 'gemini',
-      ...normalizeEPPResult(result, images)
-    });
+    const result = await callGeminiEpp(images);
+    const normalized = normalizeEpp(result, images);
+    return res.json({ source: 'gemini', ...normalized });
   } catch (error) {
     console.error('Gemini EPP error:', error);
-
     return res.json({
       source: 'fallback-error',
       error: error.message,
@@ -177,7 +113,7 @@ app.post('/api/analyze-epp', async (req, res) => {
   }
 });
 
-async function callGeminiForSection(section, images, checklist) {
+async function callGeminiInspection(images, sections) {
   const parts = [
     {
       text: `${SYSTEM_PROMPT}
@@ -186,49 +122,55 @@ BASE DOCUMENTAL CYRA:
 ${JSON.stringify(KNOWLEDGE)}
 
 TAREA:
-Analiza las imágenes del nivel PTI recibido y responde SOLO JSON válido.
+Analiza TODAS las imágenes juntas. El usuario ya no separa manualmente por superior, media e inferior.
 
-NIVEL ACTUAL:
-${JSON.stringify(section)}
+Debes:
+1. Detectar daños visibles en la imagen completa.
+2. Clasificar cada hallazgo por nivel: SUPERIOR, MEDIA o INFERIOR.
+3. Asociar cada hallazgo con imageIndex.
+4. Colocar overlay en porcentajes de la imagen completa: x, y, w, h.
+5. Considerar checklist PTI y riesgos técnicos.
+6. Responder SOLO JSON válido.
 
-CHECKLIST / ESTADO USUARIO:
-${JSON.stringify(checklist)}
+NIVELES:
+${JSON.stringify(sections)}
 
 SCHEMA:
 {
   "score": number,
   "status": "Operativo | Operativo con observaciones | Requiere reparación | Requiere PTI",
-  "findings": [
+  "sections": [
     {
-      "zone": "texto",
-      "section": "texto",
-      "component": "texto",
-      "hallazgo": "texto corto",
-      "estado": "OK | Observado | Crítico | DMG | Requiere limpieza | Requiere reparación | Requiere PTI | No visible | Imagen no válida",
-      "severity": "Leve | Media | Severa",
-      "risk": "texto",
-      "action": "texto",
-      "confidence": number,
-      "damage": "MISSING | DENTED | CONTAMINATED | LEAK | BURNED | DMG",
-      "qty": number,
-      "imageIndex": number,
-      "overlay": { "x": number, "y": number, "w": number, "h": number }
+      "code": "SUPERIOR | MEDIA | INFERIOR",
+      "zone": "Superior | Media | Inferior",
+      "score": number,
+      "status": "Operativo | Operativo con observaciones | Requiere reparación | Requiere PTI",
+      "findings": [
+        {
+          "section": "SUPERIOR | MEDIA | INFERIOR",
+          "zone": "Superior | Media | Inferior",
+          "component": "texto",
+          "hallazgo": "texto corto",
+          "estado": "OK | Observado | Crítico | DMG | Requiere limpieza | Requiere reparación | Requiere PTI | No visible | Imagen no válida",
+          "severity": "Leve | Media | Severa",
+          "risk": "texto",
+          "action": "texto",
+          "confidence": number,
+          "damage": "MISSING | DENTED | CONTAMINATED | LEAK | BURNED | DMG",
+          "qty": number,
+          "imageIndex": number,
+          "overlay": { "x": number, "y": number, "w": number, "h": number }
+        }
+      ]
     }
   ]
-}
-
-overlay debe estar en porcentajes de la imagen.`
+}`
     }
   ];
 
   for (const image of images.slice(0, 10)) {
     const inline = dataUrlToInlineData(image.dataUrl || image.src);
-
-    if (inline) {
-      parts.push({
-        inline_data: inline
-      });
-    }
+    if (inline) parts.push({ inline_data: inline });
   }
 
   const response = await fetch(geminiUrl(), {
@@ -238,14 +180,9 @@ overlay debe estar en porcentajes de la imagen.`
       'x-goog-api-key': GEMINI_API_KEY
     },
     body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts
-        }
-      ],
+      contents: [{ role: 'user', parts }],
       generationConfig: {
-        temperature: 0.15,
+        temperature: 0.12,
         topP: 0.8,
         responseMimeType: 'application/json'
       }
@@ -258,26 +195,16 @@ overlay debe estar en porcentajes de la imagen.`
   }
 
   const data = await response.json();
-  return extractJsonFromGemini(data);
+  return extractJson(data);
 }
 
-async function callGeminiForEPP(images) {
+async function callGeminiEpp(images) {
   const parts = [
     {
       text: `${SYSTEM_PROMPT}
 
-BASE DOCUMENTAL CYRA:
-${JSON.stringify({
-  requiredPPE: KNOWLEDGE.requiredPPE || KNOWLEDGE.epp,
-  reeferRisks: KNOWLEDGE.reeferRisks || KNOWLEDGE.risks,
-  preventiveActions: KNOWLEDGE.preventiveActions
-})}
-
-TAREA:
-Analiza visualmente las fotos del operador y determina cumplimiento EPP.
-
-EPP requeridos:
-casco, guantes, protectores auditivos, botas punta de acero y lentes.
+Analiza EPP del operador.
+EPP requeridos: casco, guantes, protectores auditivos, botas punta de acero y lentes.
 
 Devuelve SOLO JSON:
 {
@@ -302,12 +229,7 @@ Devuelve SOLO JSON:
 
   for (const image of images.slice(0, 10)) {
     const inline = dataUrlToInlineData(image.dataUrl || image.src);
-
-    if (inline) {
-      parts.push({
-        inline_data: inline
-      });
-    }
+    if (inline) parts.push({ inline_data: inline });
   }
 
   const response = await fetch(geminiUrl(), {
@@ -317,12 +239,7 @@ Devuelve SOLO JSON:
       'x-goog-api-key': GEMINI_API_KEY
     },
     body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts
-        }
-      ],
+      contents: [{ role: 'user', parts }],
       generationConfig: {
         temperature: 0.12,
         topP: 0.8,
@@ -337,91 +254,49 @@ Devuelve SOLO JSON:
   }
 
   const data = await response.json();
-  return extractJsonFromGemini(data);
+  return extractJson(data);
 }
 
-function geminiUrl() {
-  return `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
-}
+function normalizeInspection(raw, images) {
+  let sections = Array.isArray(raw.sections) ? raw.sections : [];
 
-function dataUrlToInlineData(dataUrl = '') {
-  const match = String(dataUrl).match(/^data:(image\/[^;]+);base64,(.+)$/);
-
-  if (!match) return null;
-
-  return {
-    mime_type: match[1],
-    data: match[2]
-  };
-}
-
-function extractJsonFromGemini(data) {
-  const text =
-    data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('\n') || '';
-
-  if (!text.trim()) {
-    throw new Error('Gemini no devolvió texto.');
+  if (!sections.length && Array.isArray(raw.findings)) {
+    sections = groupFindings(raw.findings);
   }
 
-  try {
-    return JSON.parse(text);
-  } catch (_error) {
-    const match = text.match(/\{[\s\S]*\}/);
+  sections = sections.map((section) => {
+    const code = normalizeLevel(section.code || section.section || section.zone);
+    const findings = Array.isArray(section.findings) ? section.findings : [];
 
-    if (!match) {
-      throw new Error('No se encontró JSON en la respuesta de Gemini.');
-    }
+    const normalizedFindings = findings.map((f) => normalizeFinding(f, code, images));
+    const score = clampNumber(section.score ?? calculateScore(normalizedFindings), 0, 100);
 
-    return JSON.parse(match[0]);
-  }
-}
+    return {
+      code,
+      zone: levelToZone(code),
+      score,
+      status: section.status || statusFromScore(score, normalizedFindings.filter((f) => f.estado === 'Crítico').length),
+      findings: normalizedFindings
+    };
+  });
 
-function normalizeSectionResult(raw, section, images) {
-  const findings = Array.isArray(raw.findings) ? raw.findings : [];
-
-  const normalizedFindings = findings.map((f) => ({
-    zone: String(f.zone || section.zone || section.code || 'Reefer'),
-    section: String(f.section || section.code || 'PTI'),
-    component: String(f.component || 'Componente'),
-    hallazgo: String(f.hallazgo || f.finding || 'Hallazgo visual'),
-    estado: String(f.estado || f.status || 'Observado'),
-    severity: String(f.severity || 'Media'),
-    risk: String(f.risk || 'Requiere validación técnica'),
-    action: String(f.action || 'Revisar y revalidar con evidencia'),
-    confidence: clampNumber(f.confidence ?? 85, 0, 100),
-    damage: String(f.damage || inferDamage(f.hallazgo || f.finding || '')),
-    qty: f.qty || f.quantity || 1,
-    imageIndex: clampNumber(
-      f.imageIndex ?? f.image_index ?? 0,
-      0,
-      Math.max(0, images.length - 1)
-    ),
-    overlay: normalizeOverlay(f.overlay)
-  }));
-
-  const criticalCount = normalizedFindings.filter((f) =>
-    ['Crítico', 'Requiere PTI'].includes(f.estado)
-  ).length;
-
+  const all = sections.flatMap((s) => s.findings);
   const score = clampNumber(
-    raw.score ?? calculateScore(normalizedFindings),
+    raw.score ?? (sections.length ? Math.round(sections.reduce((sum, s) => sum + s.score, 0) / sections.length) : calculateScore(all)),
     0,
     100
   );
 
-  const status = raw.status || statusFromScore(score, criticalCount);
-
   return {
     score,
-    status,
-    findings: normalizedFindings,
-    detectionsByImage: images.map((_img, idx) =>
-      normalizedFindings.filter((f) => f.imageIndex === idx)
-    )
+    status: raw.status || statusFromScore(score, all.filter((f) => f.estado === 'Crítico').length),
+    sections,
+    findings: all,
+    detectionsByImage: images.map((_img, idx) => all.filter((f) => f.imageIndex === idx))
   };
 }
 
-function normalizeEPPResult(raw, images) {
+function normalizeEpp(raw, images) {
   const findings = Array.isArray(raw.findings) ? raw.findings : [];
 
   const normalizedFindings = findings.map((f) => ({
@@ -432,192 +307,211 @@ function normalizeEPPResult(raw, images) {
     risk: String(f.risk || 'Riesgo de seguridad'),
     action: String(f.action || 'Corregir antes de iniciar la labor'),
     confidence: clampNumber(f.confidence ?? 85, 0, 100),
-    imageIndex: clampNumber(
-      f.imageIndex ?? f.image_index ?? 0,
-      0,
-      Math.max(0, images.length - 1)
-    ),
+    imageIndex: clampNumber(f.imageIndex ?? f.image_index ?? 0, 0, Math.max(0, images.length - 1)),
     overlay: normalizeOverlay(f.overlay)
   }));
 
   const alerts = normalizedFindings.filter((f) => f.estado !== 'OK').length;
-
-  const score = clampNumber(
-    raw.score ?? Math.max(20, 100 - alerts * 22),
-    0,
-    100
-  );
+  const score = clampNumber(raw.score ?? Math.max(20, 100 - alerts * 22), 0, 100);
 
   return {
     score,
-    status:
-      raw.status ||
-      (score >= 95
-        ? 'Cumple EPP'
-        : score >= 75
-          ? 'Cumple con observaciones'
-          : 'Alerta de seguridad'),
+    status: raw.status || (score >= 95 ? 'Cumple EPP' : score >= 75 ? 'Cumple con observaciones' : 'Alerta de seguridad'),
     findings: normalizedFindings,
-    detectionsByImage: images.map((_img, idx) =>
-      normalizedFindings.filter((f) => f.imageIndex === idx)
-    ),
+    detectionsByImage: images.map((_img, idx) => normalizedFindings.filter((f) => f.imageIndex === idx)),
     compliant: normalizedFindings.filter((f) => f.estado === 'OK').length,
     alerts
   };
 }
 
-function fallbackSection(section, images, checklist) {
-  const baseFindings = Array.isArray(section.findings) ? section.findings : [];
+function normalizeFinding(f, code, images) {
+  return {
+    section: normalizeLevel(f.section || f.zone || code),
+    zone: levelToZone(normalizeLevel(f.section || f.zone || code)),
+    component: String(f.component || 'Componente'),
+    hallazgo: String(f.hallazgo || f.finding || 'Hallazgo visual'),
+    estado: String(f.estado || f.status || 'Observado'),
+    severity: String(f.severity || 'Media'),
+    risk: String(f.risk || 'Requiere validación técnica'),
+    action: String(f.action || 'Revisar y revalidar con evidencia'),
+    confidence: clampNumber(f.confidence ?? 85, 0, 100),
+    damage: String(f.damage || inferDamage(f.hallazgo || f.finding || '')),
+    qty: f.qty || f.quantity || 1,
+    imageIndex: clampNumber(f.imageIndex ?? f.image_index ?? 0, 0, Math.max(0, images.length - 1)),
+    overlay: normalizeOverlay(f.overlay)
+  };
+}
 
-  const findings = baseFindings
-    .slice(0, Math.max(1, images.length))
-    .map((f, idx) => ({
-      zone: section.zone || section.code || 'Reefer',
-      section: section.code || 'PTI',
-      component: f.component || 'Componente',
-      hallazgo: f.hallazgo || 'Hallazgo visual simulado',
-      estado: f.estado || 'Observado',
-      severity: f.severity || 'Media',
-      risk: f.risk || 'Requiere validación técnica',
-      action: f.action || 'Revisar y revalidar con evidencia',
-      confidence: f.confidence || 88,
-      damage: f.damage || inferDamage(f.hallazgo || ''),
-      qty: f.qty || 1,
-      imageIndex: Math.min(idx, images.length - 1),
-      overlay: normalizeOverlay(f.overlay)
+function fallbackInspection(images) {
+  const sections = [
+    {
+      code: 'SUPERIOR',
+      zone: 'Superior',
+      findings: [
+        {
+          section: 'SUPERIOR',
+          zone: 'Superior',
+          component: 'Panel evaporadores',
+          hallazgo: 'Panel evaporadores con pernos faltantes',
+          estado: 'DMG',
+          severity: 'Media',
+          risk: 'Puede generar vibración o pérdida de sujeción',
+          action: 'Completar pernos y validar fijación',
+          confidence: 90,
+          damage: 'MISSING',
+          qty: 1,
+          imageIndex: 0,
+          overlay: { x: 18, y: 10, w: 56, h: 24 }
+        }
+      ]
+    },
+    {
+      code: 'MEDIA',
+      zone: 'Media',
+      findings: [
+        {
+          section: 'MEDIA',
+          zone: 'Media',
+          component: 'Condensador',
+          hallazgo: 'Condensador con suciedad y obstrucción',
+          estado: 'Requiere limpieza',
+          severity: 'Media',
+          risk: 'Puede afectar intercambio térmico',
+          action: 'Realizar limpieza técnica',
+          confidence: 92,
+          damage: 'CONTAMINATED',
+          qty: 1,
+          imageIndex: 0,
+          overlay: { x: 19, y: 36, w: 35, h: 39 }
+        },
+        {
+          section: 'MEDIA',
+          zone: 'Media',
+          component: 'Control Box',
+          hallazgo: 'Puerta de Control Box con sellado deficiente',
+          estado: 'Requiere reparación',
+          severity: 'Media',
+          risk: 'Ingreso de humedad al componente eléctrico',
+          action: 'Corregir sellado y revalidar',
+          confidence: 89,
+          damage: 'DMG',
+          qty: 1,
+          imageIndex: 0,
+          overlay: { x: 61, y: 30, w: 23, h: 34 }
+        }
+      ]
+    },
+    {
+      code: 'INFERIOR',
+      zone: 'Inferior',
+      findings: [
+        {
+          section: 'INFERIOR',
+          zone: 'Inferior',
+          component: 'Cable power',
+          hallazgo: 'Cable de alimentación con peladura visible',
+          estado: 'Crítico',
+          severity: 'Severa',
+          risk: 'Riesgo eléctrico. No energizar la unidad',
+          action: 'Reparar o reemplazar cable',
+          confidence: 95,
+          damage: 'DMG',
+          qty: 1,
+          imageIndex: 0,
+          overlay: { x: 15, y: 74, w: 22, h: 16 }
+        }
+      ]
+    }
+  ];
+
+  const safeSections = sections.map((section, sectionIndex) => {
+    const findings = section.findings.map((f, idx) => ({
+      ...f,
+      imageIndex: Math.min((idx + sectionIndex) % Math.max(1, images.length), images.length - 1)
     }));
 
-  (checklist || []).forEach((status, idx) => {
-    if (['DMG', 'Crítico', 'Observado', 'No visible'].includes(status)) {
-      const cp = section.checklist?.[idx] || `Punto ${idx + 1}`;
-      const label = typeof cp === 'string' ? cp : cp.label;
-      const component = typeof cp === 'string' ? section.components?.[idx] : cp.component;
+    const score = calculateScore(findings);
 
-      findings.push({
-        zone: section.zone || section.code || 'Reefer',
-        section: section.code || 'PTI',
-        component: component || 'Componente',
-        hallazgo: status === 'No visible' ? `No visible: ${label}` : label,
-        estado: status === 'DMG' ? 'DMG' : status,
-        severity: status === 'Crítico' ? 'Severa' : 'Media',
-        risk:
-          status === 'Crítico'
-            ? 'Compromete operación o seguridad'
-            : 'Puede afectar conformidad PTI',
-        action:
-          status === 'Crítico'
-            ? 'Atender antes de energizar o liberar'
-            : 'Corregir y revalidar con evidencia',
-        confidence: 82,
-        damage: inferDamage(label),
-        qty: 1,
-        imageIndex: 0,
-        overlay: {
-          x: 30,
-          y: 30,
-          w: 35,
-          h: 25
-        }
-      });
-    }
+    return {
+      ...section,
+      score,
+      status: statusFromScore(score, findings.filter((f) => f.estado === 'Crítico').length),
+      findings
+    };
   });
 
-  const unique = dedupe(findings);
-  const score = calculateScore(unique);
+  const all = safeSections.flatMap((s) => s.findings);
+  const score = Math.round(safeSections.reduce((sum, s) => sum + s.score, 0) / safeSections.length);
 
   return {
     score,
-    status: statusFromScore(
-      score,
-      unique.filter((f) => f.estado === 'Crítico').length
-    ),
-    findings: unique,
-    detectionsByImage: images.map((_img, idx) =>
-      unique.filter((f) => f.imageIndex === idx)
-    )
+    status: statusFromScore(score, all.filter((f) => f.estado === 'Crítico').length),
+    sections: safeSections,
+    findings: all,
+    detectionsByImage: images.map((_img, idx) => all.filter((f) => f.imageIndex === idx))
   };
 }
 
 function fallbackEPP(images) {
-  const scenarios = [
-    [
-      {
-        component: 'Guantes',
-        hallazgo: 'Operador sin guantes',
-        estado: 'Crítico',
-        severity: 'Severa',
-        risk: 'Riesgo de lesión en manos',
-        action: 'Colocar guantes antes de iniciar',
-        confidence: 94,
-        overlay: {
-          x: 35,
-          y: 48,
-          w: 28,
-          h: 18
-        }
-      }
-    ],
-    [
-      {
-        component: 'Casco',
-        hallazgo: 'Operador sin casco',
-        estado: 'Crítico',
-        severity: 'Severa',
-        risk: 'Riesgo de lesión craneal',
-        action: 'Colocar casco antes de ingresar a zona operativa',
-        confidence: 95,
-        overlay: {
-          x: 35,
-          y: 8,
-          w: 28,
-          h: 18
-        }
-      }
-    ],
-    [
-      {
-        component: 'EPP completo',
-        hallazgo: 'Operador con EPP completo',
-        estado: 'OK',
-        severity: 'Leve',
-        risk: 'Sin riesgo observado',
-        action: 'Apto para labores de inspección',
-        confidence: 97,
-        overlay: {
-          x: 25,
-          y: 8,
-          w: 50,
-          h: 80
-        }
-      }
-    ]
+  const findings = [
+    {
+      component: 'EPP completo',
+      hallazgo: 'Validación EPP generada por respaldo local',
+      estado: 'Observado',
+      severity: 'Media',
+      risk: 'Confirmar visualmente todos los EPP antes de iniciar',
+      action: 'Verificar casco, guantes, lentes, botas y protectores auditivos',
+      confidence: 80,
+      imageIndex: 0,
+      overlay: { x: 25, y: 8, w: 50, h: 80 }
+    }
   ];
 
-  const findings = images.flatMap((_img, idx) =>
-    scenarios[idx % scenarios.length].map((f) => ({
-      ...f,
-      imageIndex: idx
-    }))
-  );
-
-  const alerts = findings.filter((f) => f.estado !== 'OK').length;
-  const score = Math.max(20, 100 - alerts * 28);
-
   return {
-    score,
-    status:
-      score >= 95
-        ? 'Cumple EPP'
-        : score >= 75
-          ? 'Cumple con observaciones'
-          : 'Alerta de seguridad',
+    score: 78,
+    status: 'Cumple con observaciones',
     findings,
-    detectionsByImage: images.map((_img, idx) =>
-      findings.filter((f) => f.imageIndex === idx)
-    ),
-    compliant: findings.filter((f) => f.estado === 'OK').length,
-    alerts
+    detectionsByImage: images.map((_img, idx) => findings.filter((f) => f.imageIndex === idx)),
+    compliant: 0,
+    alerts: 1
   };
+}
+
+function groupFindings(findings) {
+  const groups = { SUPERIOR: [], MEDIA: [], INFERIOR: [] };
+
+  for (const f of findings) {
+    const level = normalizeLevel(f.section || f.zone || 'MEDIA');
+    groups[level].push(f);
+  }
+
+  return Object.entries(groups)
+    .filter(([, items]) => items.length)
+    .map(([code, items]) => ({
+      code,
+      zone: levelToZone(code),
+      findings: items
+    }));
+}
+
+function normalizeLevel(value = '') {
+  const v = String(value).toUpperCase();
+
+  if (v.includes('SUPERIOR') || v.includes('UPPER') || v.includes('EVAPOR')) {
+    return 'SUPERIOR';
+  }
+
+  if (v.includes('INFERIOR') || v.includes('LOWER') || v.includes('CABLE') || v.includes('PLUG')) {
+    return 'INFERIOR';
+  }
+
+  return 'MEDIA';
+}
+
+function levelToZone(code) {
+  if (code === 'SUPERIOR') return 'Superior';
+  if (code === 'INFERIOR') return 'Inferior';
+  return 'Media';
 }
 
 function calculateScore(findings) {
@@ -635,7 +529,7 @@ function calculateScore(findings) {
   return clampNumber(score, 15, 100);
 }
 
-function statusFromScore(score, criticalCount) {
+function statusFromScore(score, criticalCount = 0) {
   if (criticalCount > 1 || score < 50) return 'Requiere PTI';
   if (criticalCount === 1 || score < 70) return 'Requiere reparación';
   if (score < 90) return 'Operativo con observaciones';
@@ -671,32 +565,74 @@ function clampNumber(value, min, max) {
   return Math.max(min, Math.min(max, Math.round(n)));
 }
 
-function dedupe(items) {
-  const map = new Map();
+function dataUrlToInlineData(dataUrl = '') {
+  const match = String(dataUrl).match(/^data:(image\/[^;]+);base64,(.+)$/);
 
-  for (const item of items) {
-    const key = [
-      item.section,
-      item.component,
-      item.hallazgo,
-      item.estado
-    ].join('|');
+  if (!match) return null;
 
-    if (!map.has(key)) {
-      map.set(key, item);
-    }
+  return {
+    mime_type: match[1],
+    data: match[2]
+  };
+}
+
+function extractJson(data) {
+  const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('\n') || '';
+
+  if (!text.trim()) {
+    throw new Error('Gemini no devolvió texto.');
   }
 
-  return [...map.values()];
+  try {
+    return JSON.parse(text);
+  } catch (_error) {
+    const match = text.match(/\{[\s\S]*\}/);
+
+    if (!match) {
+      throw new Error('No se encontró JSON en la respuesta de Gemini.');
+    }
+
+    return JSON.parse(match[0]);
+  }
+}
+
+function geminiUrl() {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
+}
+
+function firstExisting(paths) {
+  return paths.find((p) => fs.existsSync(p));
+}
+
+function readText(paths, fallback = '') {
+  const file = firstExisting(paths);
+
+  if (!file) return fallback;
+
+  try {
+    return fs.readFileSync(file, 'utf8');
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function readJson(paths, fallback = {}) {
+  const file = firstExisting(paths);
+
+  if (!file) return fallback;
+
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (_error) {
+    return fallback;
+  }
 }
 
 app.get('*', (_req, res) => {
   const indexPath = firstExisting(INDEX_PATHS);
 
   if (!indexPath) {
-    return res
-      .status(404)
-      .send('No se encontró index.html en la raíz ni en public/index.html');
+    return res.status(404).send('No se encontró index.html en la raíz ni en public/index.html');
   }
 
   return res.sendFile(indexPath);
