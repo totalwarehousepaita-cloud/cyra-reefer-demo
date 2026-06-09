@@ -1,0 +1,19 @@
+{
+  "name": "cyra-reefer-vision-gemini-demo",
+  "version": "1.0.0",
+  "description": "CYRA Reefer Vision demo SaaS conectado a Gemini para inspección visual PTI y EPP.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {}
+}

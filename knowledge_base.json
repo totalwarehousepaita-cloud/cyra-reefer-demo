@@ -1,0 +1,194 @@
+{
+  "product": "CYRA Reefer Vision",
+  "purpose": "Inspección visual inteligente para PTI de contenedores refrigerados y evaluación EPP del operador.",
+  "sourceDocuments": [
+    "RUTA PTI.pdf",
+    "CHECK LIST PTI WEB-APP.xlsx",
+    "Secciones de Puntos PTI.xlsx",
+    "Validaciones Reconocimiento Contenedor Reefer",
+    "Documento de Requerimientos Funcionales CYRA Reefer Vision"
+  ],
+  "ptiPrinciples": [
+    "El PTI se realiza a todas las unidades para garantizar su buen funcionamiento.",
+    "La inspección debe confirmar el correcto funcionamiento de componentes del equipo reefer.",
+    "La ruta debe ordenar la revisión para cubrir todos los puntos técnicos solicitados por fabricantes, líneas marítimas y operación.",
+    "La revisión se gestiona con evidencia fotográfica, clasificación de hallazgos, severidad, riesgo y acción recomendada."
+  ],
+  "requiredPPE": ["casco", "guantes", "protectores auditivos", "botas punta de acero", "lentes"],
+  "reeferRisks": ["Electrocución", "Golpes y caídas", "Quemaduras", "Lesiones oculares"],
+  "preventiveActions": [
+    "Verificar el buen estado de las escaleras.",
+    "Evitar subirse o colgarse de los reefers sin usar escaleras.",
+    "Verificar que el patio no presente obstáculos como cables conectados a corriente.",
+    "No energizar la unidad si existe cable expuesto, enchufe quemado o daño eléctrico visible."
+  ],
+  "reviewLevels": [
+    {
+      "id": "s0",
+      "code": "DATOS",
+      "name": "Identificación de unidad",
+      "zone": "Datos de unidad",
+      "components": ["Número de contenedor", "Marca de unidad", "Modelo", "Serie", "Placa"],
+      "checkpoints": [
+        "Número de contenedor visible o registrado",
+        "Marca y modelo de unidad visibles",
+        "Serie o placa identificable",
+        "Foto general útil de máquina completa"
+      ]
+    },
+    {
+      "id": "s1",
+      "code": "SUPERIOR",
+      "name": "Revisión reefer superior",
+      "zone": "Superior",
+      "components": ["Panel evaporadores", "Pernos", "Tuercas", "Damper", "Panel superior"],
+      "checkpoints": [
+        "Panel evaporadores con pernos completos",
+        "Pernos y tuercas completos y ajustados",
+        "Damper de ventilación abre y cierra correctamente",
+        "Panel superior sin golpes ni deformación visible"
+      ],
+      "typicalFindings": [
+        {
+          "component": "Panel evaporadores",
+          "finding": "Pernos incompletos o faltantes",
+          "status": "DMG",
+          "severity": "Media",
+          "risk": "Puede generar vibración o pérdida de sujeción del panel",
+          "action": "Completar pernos y validar fijación del panel"
+        },
+        {
+          "component": "Damper",
+          "finding": "Damper no abre/cierra correctamente",
+          "status": "Observado",
+          "severity": "Media",
+          "risk": "Puede afectar ventilación y circulación de aire",
+          "action": "Ajustar y verificar apertura/cierre del damper"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "code": "MEDIA",
+      "name": "Revisión reefer media",
+      "zone": "Media",
+      "components": ["Condensador", "Display", "Control Box", "Cableado", "Compresor", "Tuberías"],
+      "checkpoints": [
+        "Condensador limpio, sin corrosión ni fugas visibles",
+        "Display y controlador legibles",
+        "Control Box cerrado y sellado correctamente",
+        "Cableado de contactores en buen estado visual",
+        "Compresor y tuberías sin rastros de aceite ni corrosión"
+      ],
+      "typicalFindings": [
+        {
+          "component": "Condensador",
+          "finding": "Condensador sucio u obstruido",
+          "status": "Requiere limpieza",
+          "severity": "Media",
+          "risk": "Puede afectar el intercambio térmico",
+          "action": "Realizar limpieza técnica del condensador"
+        },
+        {
+          "component": "Control Box",
+          "finding": "Puerta o sellado deficiente",
+          "status": "Requiere reparación",
+          "severity": "Media",
+          "risk": "Ingreso de humedad al componente eléctrico",
+          "action": "Corregir sellado y revalidar estanqueidad"
+        },
+        {
+          "component": "Tuberías",
+          "finding": "Mancha de aceite o fuga visible",
+          "status": "Crítico",
+          "severity": "Severa",
+          "risk": "Posible fuga de aceite o refrigerante",
+          "action": "Revisión técnica específica y prueba de fuga"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "code": "INFERIOR",
+      "name": "Revisión reefer inferior",
+      "zone": "Inferior",
+      "components": ["Cable power", "Plug", "Guardacable", "Manguera drenaje", "Base compresor", "Motor condensador"],
+      "checkpoints": [
+        "Cable power y plug completos con máximo 2 empalmes",
+        "Guardacable limpio y en posición",
+        "Manguera o drenaje en buen estado visual",
+        "Base compresor ajustada",
+        "Motor condensador y ventilador sin daño visible"
+      ],
+      "typicalFindings": [
+        {
+          "component": "Cable power",
+          "finding": "Cable de alimentación con corte, peladura o exposición",
+          "status": "Crítico",
+          "severity": "Severa",
+          "risk": "Riesgo eléctrico. No energizar la unidad",
+          "action": "Reparar o reemplazar cable antes de operación"
+        },
+        {
+          "component": "Plug",
+          "finding": "Enchufe quemado, roto u oxidado",
+          "status": "Crítico",
+          "severity": "Severa",
+          "risk": "Posible corto o falso contacto",
+          "action": "Reemplazar enchufe reefer"
+        },
+        {
+          "component": "Manguera drenaje",
+          "finding": "Drenaje obstruido o manguera no operativa",
+          "status": "Observado",
+          "severity": "Media",
+          "risk": "Puede afectar drenaje de la unidad",
+          "action": "Revisar y asegurar la manguera de drenaje"
+        }
+      ]
+    }
+  ],
+  "originalPTISections": [
+    {"section":"1", "items":["Panel evaporadores con pernos completos", "Pernos tuercas completos", "Damper ventilación abrir y cerrar correctamente"]},
+    {"section":"2", "items":["Limpieza de condensador, corrosión y fugas", "18 mts cable y plug, máximo 2 empalmes", "Guardacable limpio", "Revisión manguera drenaje"]},
+    {"section":"3", "items":["Pernos base compresor ajustados", "Tuberías limpias sin rastro de aceite ni corrosión", "Water outlet coupling lubricado", "Visor humedad y filtro drier sin corrosión"]},
+    {"section":"4", "items":["Cableado de Control Box", "Cableado de contactores", "Resistencias con pinza o megómetro", "Puerta de Control Box con sellado correcto", "Software actualizado según línea", "Fecha y hora GMT", "Modelo", "ID", "RCD transmitiendo y luces"]},
+    {"section":"5", "items":["Nivel refrigerante", "Giro de motor condensador", "Máquina limpia de etiquetas o pegatinas", "Sticker PTI en lugar correcto", "Documento PTI firmado/sellado dentro de CB"]},
+    {"section":"6", "items":["Nivel de oil en vacuum pump y limpio", "Presión membrana entre 20mb y 80mb", "O2 entre 18% y 21%", "CO2 rango 0 a 0.3%", "Vacuum hose 3/4 ajustada correctamente"]}
+  ],
+  "statuses": ["OK", "DMG", "Observado", "Crítico", "No visible", "Imagen no válida", "Requiere limpieza", "Requiere reparación", "Requiere reemplazo", "Requiere PTI"],
+  "severityRules": {
+    "Leve": "No afecta operación; ejemplo suciedad ligera o pequeña corrosión.",
+    "Media": "Puede afectar rendimiento; ejemplo condensador parcialmente obstruido o burlete deteriorado.",
+    "Severa": "Compromete operación o seguridad; ejemplo cable expuesto, enchufe quemado, ventilador roto o posible fuga."
+  },
+  "estimateCatalog": [
+    {"damage":"MISSING", "quantity":1, "location":"ACORDE A IICL", "replacement":"SI"},
+    {"damage":"DENTED", "quantity":2, "location":"ACORDE A IICL", "replacement":"NO"},
+    {"damage":"CONTAMINATED", "quantity":1, "location":"ACORDE A IICL", "replacement":"SI"},
+    {"damage":"LEAK", "quantity":1, "location":"ACORDE A IICL", "replacement":"SI"},
+    {"damage":"BURNED", "quantity":1, "location":"ACORDE A IICL", "replacement":"SI"}
+  ],
+  "requiredOutputSchema": {
+    "score": "number 0-100",
+    "status": "Operativo | Operativo con observaciones | Requiere reparación | Requiere PTI",
+    "findings": [
+      {
+        "zone": "string",
+        "section": "string",
+        "component": "string",
+        "hallazgo": "string corto y técnico",
+        "estado": "OK | DMG | Observado | Crítico | Requiere limpieza | Requiere reparación | Requiere reemplazo | Requiere PTI | Imagen no válida | No visible",
+        "severity": "Leve | Media | Severa",
+        "risk": "string",
+        "action": "string",
+        "confidence": "number 0-100",
+        "damage": "MISSING | DENTED | CONTAMINATED | LEAK | BURNED | DMG | OK",
+        "qty": "number or string",
+        "imageIndex": "number starting at 0",
+        "overlay": {"x":"0-85", "y":"0-85", "w":"8-60", "h":"8-60"}
+      }
+    ],
+    "detectionsByImage": "array of findings per image"
+  }
+}

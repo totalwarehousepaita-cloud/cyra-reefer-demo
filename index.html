@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYRA REEFER VISION | Demo SaaS PTI Inteligente</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root{
+      --primary:#00BFFF;
+      --secondary:#38BDF8;
+      --support:#7DD3FC;
+      --black:#0A0A0A;
+      --black2:#111827;
+      --gray:#374151;
+      --white:#FFFFFF;
+      --success:#22C55E;
+      --warning:#F59E0B;
+      --critical:#EF4444;
+      --bg:#060B13;
+      --panel:rgba(17,24,39,.78);
+      --panel-solid:#101827;
+      --panel-soft:rgba(255,255,255,.04);
+      --border:rgba(125,211,252,.18);
+      --muted:#9fb0c6;
+      --text:#ebf8ff;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:0;background:
+      radial-gradient(circle at 15% 0%,rgba(0,191,255,.23),transparent 30%),
+      radial-gradient(circle at 85% 5%,rgba(56,189,248,.16),transparent 26%),
+      linear-gradient(160deg,#04070d 0%,#07121d 45%,#090d13 100%);z-index:-3}
+    body::after{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(125,211,252,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(125,211,252,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);z-index:-2;pointer-events:none}
+    .hidden{display:none!important}
+    .small{font-size:.82rem;color:var(--muted)}
+    .mono{font-family:SFMono-Regular,Consolas,Menlo,monospace}
+    .row{display:flex;gap:12px;align-items:center}
+    .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid var(--border);background:rgba(0,191,255,.08);font-size:.76rem;font-weight:800;color:#d9f6ff}
+    .pill.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.25);color:#c8ffd8}
+    .pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28);color:#ffe4aa}
+    .pill.bad{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.28);color:#ffd0d0}
+    .pill.gray{background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.2);color:#d2dceb}
+    .btn{border:none;border-radius:16px;padding:12px 16px;background:linear-gradient(135deg,var(--primary),#149ad4);color:#fff;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:9px;box-shadow:0 14px 34px rgba(0,191,255,.25);transition:.25s transform,.25s filter,.25s box-shadow}
+    .btn:hover{transform:translateY(-2px);filter:brightness(1.05);box-shadow:0 20px 44px rgba(0,191,255,.32)}
+    .btn.secondary{background:rgba(255,255,255,.06);border:1px solid var(--border);box-shadow:none}
+    .btn.danger{background:linear-gradient(135deg,var(--critical),#b91c1c)}
+    .btn.sm{padding:8px 11px;border-radius:12px;font-size:.8rem}
+    .input,select,textarea{width:100%;border:1px solid var(--border);background:rgba(5,10,18,.68);color:var(--text);border-radius:15px;padding:12px 14px;outline:none;transition:.2s border,.2s box-shadow}
+    .input:focus,select:focus,textarea:focus{border-color:rgba(0,191,255,.58);box-shadow:0 0 0 4px rgba(0,191,255,.1)}
+    .card{border:1px solid var(--border);background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(20px)}
+    .card.pad{padding:20px}
+    .card-title{margin:0 0 14px;font-size:1.02rem;font-weight:950}
+    .grid{display:grid;gap:18px}
+    .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+    .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+    .login{min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr}
+    .login-left{padding:44px 48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+    .login-left::before{content:"";position:absolute;inset:8%;background:radial-gradient(circle,rgba(0,191,255,.22),transparent 58%);filter:blur(18px);z-index:-1}
+    .brand{display:flex;align-items:center;gap:13px;font-weight:950;letter-spacing:.04em}
+    .brand-mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--primary),#0f4c81);display:grid;place-items:center;box-shadow:0 0 35px rgba(0,191,255,.35)}
+    .brand span{color:var(--primary)}
+    .hero-title{font-size:clamp(2.6rem,7vw,6rem);line-height:.9;font-weight:1000;letter-spacing:-.06em;margin:34px 0 18px}
+    .hero-title span{background:linear-gradient(135deg,#ffffff,var(--primary),var(--support));-webkit-background-clip:text;color:transparent}
+    .hero-sub{max-width:760px;color:#bccbdd;line-height:1.7;font-size:1.06rem}
+    .hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:32px}
+    .hero-chip{border:1px solid var(--border);background:rgba(255,255,255,.05);border-radius:18px;padding:18px}
+    .hero-chip strong{display:block;color:var(--primary);font-size:1.56rem;margin-top:8px}
+    .login-card-wrap{padding:32px;display:grid;place-items:center;background:linear-gradient(180deg,rgba(17,24,39,.55),rgba(0,0,0,.22));border-left:1px solid var(--border)}
+    .login-card{width:min(440px,100%);padding:28px;border:1px solid var(--border);border-radius:30px;background:rgba(9,14,23,.86);box-shadow:var(--shadow);backdrop-filter:blur(24px)}
+    .login-card h2{margin:8px 0 6px;font-size:1.72rem}
+    .login-card label{display:block;font-size:.82rem;font-weight:800;color:#c9d6e7;margin:16px 0 8px}
+    .login-card .hint{margin-top:15px;padding:14px;border-radius:16px;background:rgba(0,191,255,.08);border:1px dashed rgba(125,211,252,.32);color:#bdeeff;font-size:.84rem;line-height:1.55}
+
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{position:sticky;top:0;height:100vh;background:rgba(6,12,20,.82);backdrop-filter:blur(22px);border-right:1px solid var(--border);padding:22px;display:flex;flex-direction:column;gap:18px;z-index:30}
+    .nav{display:flex;flex-direction:column;gap:8px}
+    .nav button{width:100%;border:none;background:transparent;color:#b7c7d8;border-radius:15px;padding:13px 14px;text-align:left;display:flex;align-items:center;gap:12px;font-weight:850;cursor:pointer;transition:.2s}
+    .nav button:hover,.nav button.active{background:linear-gradient(90deg,rgba(0,191,255,.18),rgba(255,255,255,.04));color:#fff}
+    .nav button.active{border:1px solid rgba(0,191,255,.22)}
+    .userbox{margin-top:auto;border:1px solid var(--border);border-radius:20px;background:rgba(255,255,255,.04);padding:14px}
+    .avatar{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#134e6f);display:grid;place-items:center;font-weight:1000}
+    .main{min-width:0}
+    .topbar{position:sticky;top:0;z-index:20;padding:18px 24px;border-bottom:1px solid var(--border);background:rgba(7,11,18,.78);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .topbar h1{margin:0;font-size:1.2rem}
+    .mobile-menu{display:none}
+    .content{padding:24px;max-width:1600px;margin:0 auto}
+    .view{display:none;animation:fade .3s ease}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    .kpi{padding:20px;position:relative;overflow:hidden}
+    .kpi::after{content:"";position:absolute;right:-36px;top:-36px;width:120px;height:120px;border-radius:50%;background:rgba(0,191,255,.13)}
+    .kpi .icon{width:46px;height:46px;border-radius:15px;background:rgba(0,191,255,.1);border:1px solid rgba(0,191,255,.18);display:grid;place-items:center;color:var(--primary)}
+    .kpi strong{display:block;font-size:2rem;letter-spacing:-.05em;margin-top:16px}
+    .kpi small{display:block;color:#8fa2b8;font-weight:800}
+    .chart-card{height:320px;padding:18px}
+    .chart-card canvas{max-height:245px}
+    .activity{display:flex;flex-direction:column;gap:12px}
+    .activity-item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:13px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06)}
+    .dot{width:11px;height:11px;border-radius:50%;background:var(--primary);box-shadow:0 0 18px var(--primary)}
+
+    .pti-grid{display:grid;grid-template-columns:minmax(0,1.35fr) 420px;gap:18px}
+    .section-tabs{display:flex;gap:10px;flex-wrap:wrap}
+    .section-tab{min-width:155px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#cfe8f2;border-radius:18px;padding:14px;cursor:pointer;transition:.2s}
+    .section-tab.active{background:linear-gradient(135deg,rgba(0,191,255,.18),rgba(255,255,255,.05));border-color:rgba(0,191,255,.32)}
+    .section-tab b{display:block;font-size:.98rem}
+    .section-tab span{font-size:.76rem;color:var(--muted)}
+    .section-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-top:6px}
+    .section-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .upload-box{margin-top:18px;border:1.6px dashed rgba(125,211,252,.34);border-radius:22px;padding:22px;background:linear-gradient(180deg,rgba(0,191,255,.06),rgba(255,255,255,.03));text-align:center;position:relative}
+    .upload-box.drag{border-color:rgba(0,191,255,.7);background:linear-gradient(180deg,rgba(0,191,255,.15),rgba(255,255,255,.04))}
+    .upload-box input{display:none}
+    .uploader-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+    .preview-card{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border);background:#06111a;min-height:185px}
+    .preview-card img{width:100%;height:220px;object-fit:cover;display:block}
+    .preview-top{position:absolute;inset:10px 10px auto 10px;display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:3}
+    .preview-top .chip{background:rgba(6,12,20,.85);border:1px solid rgba(255,255,255,.09);padding:6px 9px;border-radius:999px;font-size:.72rem;font-weight:800}
+    .preview-remove{border:none;background:rgba(239,68,68,.88);color:#fff;width:30px;height:30px;border-radius:10px;cursor:pointer;display:grid;place-items:center}
+    .overlay-box{position:absolute;border:2px solid var(--primary);background:rgba(0,191,255,.12);border-radius:10px;z-index:2;backdrop-filter:blur(1px)}
+    .overlay-label{position:absolute;left:0;top:-30px;background:rgba(6,12,20,.9);color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 8px;font-size:.67rem;font-weight:900;letter-spacing:.02em;white-space:nowrap;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    .overlay-label.bad{border-color:rgba(239,68,68,.28);color:#ffd0d0}
+    .overlay-label.warn{border-color:rgba(245,158,11,.28);color:#ffe6ba}
+    .overlay-label.ok{border-color:rgba(34,197,94,.28);color:#d2ffe0}
+    .preview-footer{padding:12px}
+    .preview-footer b{display:block;font-size:.93rem;margin-bottom:4px}
+    .checklist{display:grid;gap:10px;margin-top:18px}
+    .check-row{display:grid;grid-template-columns:1fr 165px;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .check-row b{font-size:.92rem}
+    .section-findings{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+    .finding-card{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);border-radius:18px}
+    .finding-icon{width:42px;height:42px;border-radius:14px;background:rgba(0,191,255,.1);display:grid;place-items:center;color:var(--primary);border:1px solid rgba(0,191,255,.18)}
+    .finding-icon.bad{background:rgba(239,68,68,.12);color:#ffbcbc;border-color:rgba(239,68,68,.22)}
+    .finding-icon.warn{background:rgba(245,158,11,.12);color:#ffe4a3;border-color:rgba(245,158,11,.22)}
+    .ai-console{display:flex;flex-direction:column;gap:16px}
+    .ai-progress{height:10px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+    .ai-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--support));border-radius:999px;transition:width .35s ease}
+    .ai-steps{display:grid;gap:9px}
+    .ai-step{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);font-size:.9rem}
+    .ai-step.active{border-color:rgba(0,191,255,.32);background:rgba(0,191,255,.08)}
+    .ai-step.done{border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.08)}
+    .ai-spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:var(--primary);animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .gauge-wrap{display:grid;place-items:center;padding:10px 0 4px}
+    .gauge{width:180px;height:180px;border-radius:50%;background:conic-gradient(var(--primary) 0deg, rgba(255,255,255,.08) 0deg);display:grid;place-items:center;position:relative}
+    .gauge::after{content:"";position:absolute;inset:16px;border-radius:50%;background:rgba(8,13,22,.96);border:1px solid rgba(255,255,255,.07)}
+    .gauge-content{position:relative;text-align:center;z-index:1}
+    .gauge-content strong{display:block;font-size:2.6rem;letter-spacing:-.06em}
+    .results-grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px}
+    .summary-list{display:grid;gap:12px}
+    .summary-item{padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .findings-table{width:100%;border-collapse:collapse;font-size:.92rem}
+    .findings-table th,.findings-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}
+    .findings-table th{color:#b8c7d8;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+    .history-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .history-controls .input,.history-controls select{max-width:250px}
+    table.data-table{width:100%;border-collapse:collapse}
+    table.data-table th,table.data-table td{padding:13px 12px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+    table.data-table th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#b7c6d8}
+    .report-box h2,.report-box h3{margin:0 0 10px}
+    .report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 18px}
+    .report-metric{padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .report-metric b{color:#b7c6d8;font-size:.8rem;text-transform:uppercase}
+    .report-metric h2{margin:8px 0 4px}
+    .toast{position:fixed;right:20px;bottom:20px;padding:14px 16px;border-radius:16px;border:1px solid var(--border);background:rgba(9,14,23,.94);box-shadow:var(--shadow);transform:translateY(16px);opacity:0;pointer-events:none;transition:.25s;z-index:100}
+    .toast.show{transform:none;opacity:1}
+
+
+    .epp-required{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+    .epp-item{padding:14px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06)}
+    .epp-item b{display:block;margin-top:6px}
+    .epp-alerts{display:grid;gap:12px;margin-top:16px}
+    @media (max-width: 1280px){
+      .grid.cols-4{grid-template-columns:repeat(2,1fr)}
+      .pti-grid,.results-grid{grid-template-columns:1fr}
+    }
+    @media (max-width: 1080px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:fixed;left:-310px;transition:left .25s ease;width:280px}
+      .sidebar.open{left:0}
+      .mobile-menu{display:inline-flex}
+      .topbar{padding:16px}
+      .content{padding:16px}
+    }
+    @media (max-width: 980px){
+      .login{grid-template-columns:1fr}
+      .login-left{padding:28px}
+      .hero-grid{grid-template-columns:1fr}
+      .login-card-wrap{border-left:none;border-top:1px solid var(--border)}
+      .grid.cols-3,.grid.cols-2{grid-template-columns:1fr}
+      .report-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width: 760px){
+      .grid.cols-4{grid-template-columns:1fr}
+      .check-row{grid-template-columns:1fr}
+      .preview-card img{height:200px}
+      .report-grid{grid-template-columns:1fr}
+      .section-tab{min-width:100%}
+      .topbar h1{font-size:1rem}
+      .hero-title{font-size:2.45rem}
+    }
+    @media print{
+      .sidebar,.topbar,.btn,.history-controls,.toast,.mobile-menu{display:none!important}
+      body{background:#fff;color:#111}
+      .main,.content,.view,.view.active,.card{display:block!important;background:#fff;color:#111;box-shadow:none;border:1px solid #ddd}
+      .content{padding:0}
+    }
+  
+    /* ===== CYRA CLEAN EXECUTIVE MODE ===== */
+    :root{
+      --bg:#070A10;
+      --panel:rgba(15,23,42,.72);
+      --panel-soft:rgba(255,255,255,.035);
+      --border:rgba(148,163,184,.16);
+      --shadow:0 14px 36px rgba(0,0,0,.26);
+      --muted:#A8B4C3;
+      --radius:20px;
+    }
+    body::before{
+      background:
+        radial-gradient(circle at 18% 0%,rgba(0,191,255,.12),transparent 28%),
+        linear-gradient(160deg,#05070c 0%,#07101a 48%,#06080d 100%);
+    }
+    body::after{opacity:.45}
+    .brand-mark{box-shadow:none}
+    .hero-grid{display:none}
+    .hero-title{font-size:clamp(2.35rem,6vw,4.9rem);letter-spacing:-.055em}
+    .hero-sub{max-width:680px;font-size:1rem}
+    .pill{background:rgba(255,255,255,.045);border-color:rgba(148,163,184,.18);font-weight:750}
+    .pill.ok,.pill.warn,.pill.bad{font-weight:800}
+    .btn{box-shadow:0 10px 24px rgba(0,191,255,.16)}
+    .btn:hover{box-shadow:0 14px 30px rgba(0,191,255,.22)}
+    .card{box-shadow:var(--shadow)}
+    .kpi{padding:18px}
+    .kpi::after{opacity:.45}
+    .kpi strong{font-size:1.72rem;margin-top:12px}
+    .kpi .icon{width:40px;height:40px;border-radius:13px}
+    .chart-card{height:280px}
+    .chart-card canvas{max-height:210px}
+    .activity-item,.summary-item,.check-row,.finding-card,.epp-item{background:rgba(255,255,255,.032)}
+    .topbar .row .pill:not(.ok){display:none}
+    .section-meta .pill:not(:first-child){display:none}
+    .section-tab{min-width:140px;padding:12px;border-radius:15px}
+    .section-tab span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+    .upload-box{padding:18px;background:rgba(0,191,255,.035)}
+    .preview-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+    .preview-card img{height:190px}
+    .checklist{gap:8px}
+    .check-row{padding:11px 12px}
+    .check-row b{font-size:.88rem}
+    .ai-console{gap:12px}
+    .ai-step{padding:9px 10px;font-size:.85rem}
+    .gauge{width:150px;height:150px}
+    .gauge-content strong{font-size:2.2rem}
+    .sidebar{background:rgba(5,10,18,.88)}
+    .content{max-width:1420px}
+    .report-box p,.report-box li{line-height:1.55}
+
+  
+    .results-grid{align-items:start}
+    #resultsView .card-title{font-size:1.08rem}
+    #overallGauge{width:170px;height:170px}
+
+  
+    .nav button{font-size:.94rem}
+    .topbar .row:empty{display:none}
+  </style>
+</head>
+<body>
+  <div id="loginScreen" class="login">
+    <div class="login-left">
+      <div>
+        <div class="brand"><div class="brand-mark"><i data-lucide="scan-search"></i></div><div>CYRA <span>REEFER VISION</span></div></div>
+        <h1 class="hero-title">PTI inteligente <span>por secciones</span></h1>
+        <p class="hero-sub">Demo funcional empresarial para inspección visual asistida de contenedores reefer. La experiencia guía al técnico por nivel, envía imágenes al agente Gemini y devuelve hallazgos con señalización visual del daño sobre la evidencia.</p>
+        <div class="hero-grid">
+          <div class="hero-chip">Dashboard ejecutivo<strong>+94%</strong><span class="small">Visibilidad operativa</span></div>
+          <div class="hero-chip">Ruta PTI guiada<strong>6</strong><span class="small">Secciones técnicas</span></div>
+          <div class="hero-chip">Hallazgos IA<strong>En sitio</strong><span class="small">Overlay de daño</span></div>
+        </div>
+      </div>
+      <div class="small">Basado en validaciones técnicas reefer, lógica PTI por secciones y clasificación de hallazgos para CYRA Reefer Vision.</div>
+    </div>
+    <div class="login-card-wrap">
+      <form class="login-card" id="loginForm">
+        <div class="pill"><i data-lucide="shield-check"></i> Acceso Operador / Supervisor</div>
+        <h2>Inicio de sesión</h2>
+        <p class="small">Ingrese a la plataforma de inspección visual asistida.</p>
+        <label>Correo corporativo</label>
+        <input class="input" id="email" type="email" value="operaciones@cyra.ai" required>
+        <label>Contraseña</label>
+        <input class="input" id="password" type="password" value="CYRA2026" required>
+        <div class="row" style="margin-top:18px;justify-content:space-between;flex-wrap:wrap">
+          <label class="small" style="margin:0"><input type="checkbox" checked> Mantener sesión</label>
+          <a href="#" class="small" style="color:var(--support);text-decoration:none">Recuperar acceso</a>
+        </div>
+        <button class="btn" style="width:100%;justify-content:center;margin-top:20px" type="submit"><i data-lucide="log-in"></i> Ingresar a CYRA</button>
+        <div class="hint"><b>Demo:</b> abra sesión y navegue a <b>Inspección PTI</b>. Suba imágenes en la sección correspondiente y ejecute el análisis para ver el daño señalado sobre la foto.</div>
+      </form>
+    </div>
+  </div>
+
+  <div id="appScreen" class="app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="brand"><div class="brand-mark"><i data-lucide="scan-search"></i></div><div>CYRA <span>REEFER VISION</span></div></div>
+        <div class="pill" style="margin-top:16px"><i data-lucide="sparkles"></i> Gemini Agent SaaS</div>
+      </div>
+      <div class="nav" id="navMenu">
+        <button class="active" data-view="inspectionView"><i data-lucide="scan-line"></i> Inspección PTI</button>
+        <button data-view="resultsView"><i data-lucide="gauge"></i> Resultados</button>
+        <button data-view="eppView"><i data-lucide="hard-hat"></i> EPP Operador</button>
+        <button data-view="reportView"><i data-lucide="file-text"></i> Reporte</button>
+      </div>
+      <div class="userbox">
+        <div class="between">
+          <div class="row">
+            <div class="avatar">CW</div>
+            <div>
+              <b id="userName">Operador CYRA</b>
+              <div class="small">Supervisor PTI Reefer</div>
+            </div>
+          </div>
+          <button class="btn secondary sm" id="logoutBtn"><i data-lucide="log-out"></i></button>
+        </div>
+        <div class="small" style="margin-top:12px">Terminal: Callao Reefer Yard · Última sincronización <span id="clock"></span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="row">
+          <button class="btn secondary sm mobile-menu" id="menuToggle"><i data-lucide="menu"></i></button>
+          <div>
+            <h1>CYRA Reefer Vision</h1>
+            <div class="small">Inspección visual inteligente</div>
+          </div>
+        </div>
+        <div class="row" style="flex-wrap:wrap;justify-content:flex-end">
+          <div class="pill"><i data-lucide="cpu"></i> Gemini IA</div>
+          <div class="pill ok"><i data-lucide="shield-check"></i> Ruta PTI activa</div>
+          
+        </div>
+      </div>
+
+      <div class="content">
+<section id="inspectionView" class="view active">
+          <div class="card pad" style="margin-bottom:18px">
+            <div class="between" style="flex-wrap:wrap">
+              <div>
+                <h3 class="card-title" style="margin-bottom:6px">Revisión reefer por nivel</h3>
+                <div class="small">Ahora la revisión del reefer se organiza por nivel: superior, media e inferior.</div>
+              </div>
+              <div class="row" style="flex-wrap:wrap">
+                <div class="pill"><i data-lucide="image"></i> Máx. 10 imágenes totales</div>
+                <div class="pill gray"><i data-lucide="folder"></i> Imágenes por sección</div>
+                <div class="pill ok"><i data-lucide="scan-search"></i> Overlay de hallazgo</div>
+              </div>
+            </div>
+            <div id="sectionTabs" class="section-tabs" style="margin-top:18px"></div>
+          </div>
+
+          <div class="pti-grid">
+            <div class="card pad">
+              <div class="section-header">
+                <div>
+                  <div class="pill" id="sectionPill">Sección</div>
+                  <h2 id="sectionTitle" style="margin:10px 0 6px"></h2>
+                  <div class="small" id="sectionDesc"></div>
+                  <div class="section-meta" id="sectionMeta"></div>
+                </div>
+                <div class="row" style="flex-wrap:wrap">
+                  <button class="btn secondary sm" id="copyChecklistBtn"><i data-lucide="clipboard-copy"></i> Checklist base</button>
+                  <button class="btn sm" id="analyzeSectionBtn"><i data-lucide="cpu"></i> Analizar sección</button>
+                </div>
+              </div>
+
+              <div class="upload-box" id="uploadBox">
+                <i data-lucide="upload-cloud" style="width:38px;height:38px;color:var(--primary)"></i>
+                <h3 style="margin:10px 0 6px">Cargar imágenes del nivel actual</h3>
+                <div class="small">JPG, PNG o WEBP. Las imágenes se gestionan por nivel.</div>
+                <div class="uploader-actions">
+                  <button class="btn sm" id="pickFilesBtn"><i data-lucide="images"></i> Seleccionar imágenes</button>
+                  <button class="btn secondary sm" id="loadDemoBtn"><i data-lucide="flask-conical"></i> Cargar demo</button>
+                </div>
+                <input id="sectionFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+              </div>
+
+              <div class="preview-grid" id="sectionPreviewGrid"></div>
+              <div id="checklistBox" class="hidden"></div>
+<h3 class="card-title" style="margin-top:22px">Hallazgos de la sección</h3>
+              <div id="sectionFindings" class="section-findings"></div>
+            </div>
+
+            <div class="card pad">
+              <div class="between"><h3 class="card-title">Análisis CYRA por nivel</h3><span class="pill" id="aiStatusPill">En espera</span></div>
+              <div style="margin-top:14px">
+                <div class="between"><span class="small" id="aiStatusText">Listo para analizar el nivel</span><b id="aiPct">0%</b></div>
+                <div class="ai-progress" style="margin-top:10px"><span id="aiBar"></span></div>
+                <div class="small" style="margin-top:12px">Al finalizar, CYRA abrirá automáticamente la página de resultados con el score general, hallazgos y evidencias.</div>
+              </div>
+              <div class="card" style="padding:16px;background:rgba(255,255,255,.032);margin-top:18px">
+                <div class="between"><b>Seguridad previa a la revisión</b><span class="pill warn">EPP</span></div>
+                <div class="small" style="margin-top:10px;line-height:1.65">Antes de inspeccionar: casco, guantes, protectores auditivos, botas punta de acero y lentes.</div>
+              </div>
+
+              <div id="aiSteps" class="ai-steps hidden"></div>
+              <span id="sectionState" class="pill gray hidden">Pendiente</span>
+              <div id="sectionGauge" class="hidden"></div>
+              <strong id="sectionScore" class="hidden">--</strong>
+              <span id="sectionScoreLabel" class="hidden">Sin evaluar</span>
+              <div id="sectionSummary" class="hidden"></div>
+            </div>
+          </div>
+        </section>
+
+
+        <section id="eppView" class="view">
+          <div class="card pad" style="margin-bottom:18px">
+            <div class="between" style="flex-wrap:wrap">
+              <div>
+                <h3 class="card-title" style="margin-bottom:6px">Evaluación visual de EPP del operador</h3>
+                <div class="small">Suba fotos del operador o técnico y la plataforma verificará visualmente si usa casco, guantes, protectores auditivos, botas punta de acero y lentes. La demo puede devolver alertas como: <b>operador sin guantes</b> o <b>operador sin casco</b>.</div>
+              </div>
+              <div class="row" style="flex-wrap:wrap">
+                <div class="pill warn"><i data-lucide="shield-alert"></i> Seguridad ocupacional</div>
+                <div class="pill"><i data-lucide="camera"></i> Evidencia por imagen</div>
+                <div class="pill ok"><i data-lucide="scan-search"></i> Señalización visual</div>
+              </div>
+            </div>
+            <div class="epp-required">
+              <div class="epp-item"><i data-lucide="hard-hat" style="color:var(--primary)"></i><b>Casco</b><span class="small">Protección craneal obligatoria</span></div>
+              <div class="epp-item"><i data-lucide="hand" style="color:var(--primary)"></i><b>Guantes</b><span class="small">Protección de manos</span></div>
+              <div class="epp-item"><i data-lucide="ear" style="color:var(--primary)"></i><b>Protectores auditivos</b><span class="small">Control de ruido</span></div>
+              <div class="epp-item"><i data-lucide="glasses" style="color:var(--primary)"></i><b>Lentes</b><span class="small">Protección ocular</span></div>
+              <div class="epp-item"><i data-lucide="footprints" style="color:var(--primary)"></i><b>Botas punta de acero</b><span class="small">Protección de pies</span></div>
+            </div>
+          </div>
+
+          <div class="pti-grid">
+            <div class="card pad">
+              <div class="between" style="flex-wrap:wrap">
+                <div>
+                  <h3 class="card-title" style="margin-bottom:6px">Carga de evidencias EPP</h3>
+                  <div class="small">Cargue imágenes del operador. La detección devuelve etiquetas visuales señalando el EPP faltante o la conformidad.</div>
+                </div>
+                <div class="row" style="flex-wrap:wrap">
+                  <button class="btn sm" id="pickEppFilesBtn"><i data-lucide="images"></i> Seleccionar fotos</button>
+                  <button class="btn secondary sm" id="loadEppDemoBtn"><i data-lucide="flask-conical"></i> Cargar demo EPP</button>
+                  <button class="btn sm" id="analyzeEppBtn"><i data-lucide="cpu"></i> Analizar EPP</button>
+                </div>
+              </div>
+              <div class="upload-box" id="eppUploadBox" style="margin-top:18px">
+                <i data-lucide="user-round-search" style="width:38px;height:38px;color:var(--primary)"></i>
+                <h3 style="margin:10px 0 6px">Arrastre o cargue imágenes del operador</h3>
+                <div class="small">Formatos permitidos: JPG, PNG y WEBP. Máximo compartido con la demo: 10 imágenes.</div>
+                <input id="eppFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+              </div>
+              <div id="eppPreviewGrid" class="preview-grid"></div>
+            </div>
+
+            <div class="card pad">
+              <div class="between"><h3 class="card-title">Consola de cumplimiento EPP</h3><span id="eppStatusPill" class="pill gray">Pendiente</span></div>
+              <div class="gauge-wrap">
+                <div class="gauge" id="eppGauge"><div class="gauge-content"><strong id="eppScore">--</strong><span class="small" id="eppScoreLabel">Sin evaluación</span></div></div>
+              </div>
+              <div id="eppSummary" class="summary-list"></div>
+              <h3 class="card-title" style="margin-top:18px">Alertas y hallazgos EPP</h3>
+              <div id="eppFindingsList" class="epp-alerts"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="resultsView" class="view">
+          <div class="results-grid">
+            <div class="card pad">
+              <div class="between"><h3 class="card-title">Score general</h3><span id="overallStatusPill" class="pill gray">Pendiente</span></div>
+              <div class="gauge-wrap">
+                <div class="gauge" id="overallGauge"><div class="gauge-content"><strong id="overallScore">--</strong><span class="small" id="overallScoreLabel">Sin evaluación</span></div></div>
+              </div>
+              <div class="summary-list" id="overallSummary"></div>
+            </div>
+            <div class="card pad">
+              <div class="between" style="flex-wrap:wrap"><h3 class="card-title">Hallazgos consolidados</h3><div class="row" style="flex-wrap:wrap"><input id="findingSearch" class="input" placeholder="Buscar hallazgo" style="max-width:240px"><button class="btn secondary sm" onclick="renderResults()"><i data-lucide="search"></i></button></div></div>
+              <div style="overflow:auto">
+                <table class="findings-table">
+                  <thead><tr><th>Zona</th><th>Componente</th><th>Hallazgo</th><th>Estado</th><th>Severidad</th><th>Riesgo</th><th>Acción</th><th>Confianza</th></tr></thead>
+                  <tbody id="findingsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card pad" style="margin-top:18px">
+            <div class="between"><h3 class="card-title">Estimación automática de daños</h3><span class="small">Basado en hoja ESTIMADO: daño, cantidad, localización IICL y reemplazo</span></div>
+            <div id="estimateBox" style="overflow:auto"></div>
+          </div>
+
+          <div class="card pad" style="margin-top:18px">
+            <div class="between"><h3 class="card-title">Evidencia visual con daño señalado</h3><span class="small">Se muestran solamente evidencias cargadas y evaluadas</span></div>
+            <div id="resultsEvidence" class="preview-grid"></div>
+          </div>
+        </section>
+<section id="reportView" class="view">
+          <div class="card pad">
+            <div class="between" style="flex-wrap:wrap;margin-bottom:16px"><h3 class="card-title">Reporte ejecutivo automático</h3><div class="row" style="flex-wrap:wrap"><button class="btn secondary" onclick="exportExcel()"><i data-lucide="sheet"></i> Exportar Excel</button><button class="btn" onclick="exportPDF()"><i data-lucide="file-down"></i> Exportar PDF</button></div></div>
+            <div id="reportBox" class="report-box"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const AI_STEPS = [
+      'Validando calidad de imagen',
+      'Detectando contenedor reefer',
+      'Identificando zona',
+      'Reconociendo componentes',
+      'Detectando anomalías',
+      'Evaluando severidad',
+      'Calculando riesgo',
+      'Generando reporte técnico'
+    ];
+
+    
+const SECTIONS = [
+      {
+        id:'s0',
+        code:'DATOS',
+        title:'Identificación de unidad',
+        desc:'Registro base del contenedor y de la unidad reefer antes de iniciar la revisión visual.',
+        zone:'Datos de unidad',
+        components:['Número de contenedor','Marca de unidad','Modelo','Serie','Placa'],
+        checklist:[
+          'Número de contenedor visible o registrado',
+          'Marca y modelo de unidad visibles',
+          'Serie o placa identificable',
+          'Foto general útil de máquina completa'
+        ],
+        findings:[]
+      },
+      {
+        id:'s1',
+        code:'SUPERIOR',
+        title:'Revisión reefer superior',
+        desc:'Zona superior de la máquina reefer: panel evaporadores, pernos, damper, panel superior y elementos altos visibles.',
+        zone:'Superior',
+        components:['Panel evaporadores','Pernos','Tuercas','Damper','Panel superior'],
+        checklist:[
+          'Panel evaporadores con pernos completos',
+          'Pernos y tuercas completos y ajustados',
+          'Damper de ventilación abre y cierra correctamente',
+          'Panel superior sin golpes ni deformación visible'
+        ],
+        findings:[
+          {component:'Panel evaporadores', hallazgo:'Panel evaporadores con pernos faltantes', estado:'DMG', severity:'Media', risk:'Puede generar vibración o pérdida de sujeción del panel', action:'Completar pernos y validar fijación del panel', confidence:91, damage:'MISSING', overlay:{x:18,y:10,w:56,h:24}},
+          {component:'Damper', hallazgo:'Damper con cierre irregular', estado:'Observado', severity:'Media', risk:'Puede afectar ventilación y circulación de aire', action:'Ajustar y verificar apertura/cierre del damper', confidence:88, overlay:{x:8,y:10,w:18,h:18}}
+        ]
+      },
+      {
+        id:'s2',
+        code:'MEDIA',
+        title:'Revisión reefer media',
+        desc:'Zona media del reefer: condensador, rejillas, display, control box, compresor visible y componentes centrales.',
+        zone:'Media',
+        components:['Condensador','Display','Control Box','Cableado','Compresor','Tuberías'],
+        checklist:[
+          'Condensador limpio, sin corrosión ni fugas visibles',
+          'Display y controlador legibles',
+          'Control Box cerrado y sellado correctamente',
+          'Cableado de contactores en buen estado visual',
+          'Compresor y tuberías sin rastros de aceite ni corrosión'
+        ],
+        findings:[
+          {component:'Condensador', hallazgo:'Condensador con suciedad y obstrucción', estado:'Requiere limpieza', severity:'Media', risk:'Puede afectar el intercambio térmico', action:'Realizar limpieza técnica del condensador', confidence:92, damage:'CONTAMINATED', overlay:{x:19,y:36,w:35,h:39}},
+          {component:'Control Box', hallazgo:'Puerta de Control Box con sellado deficiente', estado:'Requiere reparación', severity:'Media', risk:'Ingreso de humedad al componente eléctrico', action:'Corregir sellado y revalidar estanqueidad', confidence:89, damage:'DMG', overlay:{x:61,y:30,w:23,h:34}},
+          {component:'Cableado', hallazgo:'Cableado de contactor observado', estado:'Crítico', severity:'Severa', risk:'Riesgo eléctrico y posible corto', action:'No energizar hasta reparar cableado', confidence:93, damage:'DMG', overlay:{x:67,y:57,w:18,h:18}},
+          {component:'Tuberías', hallazgo:'Mancha de aceite en tuberías', estado:'Crítico', severity:'Severa', risk:'Posible fuga de aceite o refrigerante', action:'Revisión técnica específica y prueba de fuga', confidence:94, damage:'LEAK', overlay:{x:53,y:56,w:24,h:18}}
+        ]
+      },
+      {
+        id:'s3',
+        code:'INFERIOR',
+        title:'Revisión reefer inferior',
+        desc:'Zona inferior del reefer: cable power, plug, guardacable, drenaje, base de compresor, motor condensador y elementos bajos.',
+        zone:'Inferior',
+        components:['Cable power','Plug','Guardacable','Manguera drenaje','Base compresor','Motor condensador'],
+        checklist:[
+          'Cable power y plug completos (máx. 2 empalmes)',
+          'Guardacable limpio y en posición',
+          'Manguera o drenaje en buen estado visual',
+          'Base compresor ajustada',
+          'Motor condensador y ventilador sin daño visible'
+        ],
+        findings:[
+          {component:'Cable power', hallazgo:'Cable de alimentación con peladura visible', estado:'Crítico', severity:'Severa', risk:'Riesgo eléctrico. No energizar la unidad', action:'Reparar o reemplazar cable antes de operación', confidence:95, damage:'DMG', overlay:{x:15,y:74,w:22,h:16}},
+          {component:'Plug', hallazgo:'Enchufe con quemadura superficial', estado:'Crítico', severity:'Severa', risk:'Posible corto o falso contacto', action:'Reemplazar enchufe reefer', confidence:91, damage:'BURNED', overlay:{x:17,y:80,w:14,h:10}},
+          {component:'Manguera drenaje', hallazgo:'Manguera de drenaje observada', estado:'Observado', severity:'Media', risk:'Puede afectar drenaje de la unidad', action:'Revisar y asegurar la manguera de drenaje', confidence:84, overlay:{x:63,y:78,w:18,h:10}},
+          {component:'Motor condensador', hallazgo:'Aspa del motor con daño visible', estado:'Crítico', severity:'Severa', risk:'Puede comprometer el flujo de aire del condensador', action:'Reemplazar aspa o ventilador', confidence:91, damage:'DMG', overlay:{x:31,y:38,w:26,h:34}}
+        ]
+      }
+    ];
+
+
+    const HISTORY_SEED = [
+      {date:'2026-06-08 08:42', container:'MSCU 458921-7', result:'Apto con observaciones', status:'Operativo con observaciones', score:82, findings:2, critical:0},
+      {date:'2026-06-08 08:13', container:'CMAU 991274-3', result:'Apto', status:'Operativo', score:96, findings:0, critical:0},
+      {date:'2026-06-07 18:20', container:'TLLU 304812-1', result:'Requiere reparación', status:'Requiere reparación', score:63, findings:3, critical:1},
+      {date:'2026-06-07 16:41', container:'OOLU 667514-2', result:'Requiere PTI', status:'Requiere PTI', score:41, findings:4, critical:2}
+    ];
+
+
+    const ESTIMATE_CATALOG = [
+      {damage:'MISSING', quantity:1, location:'ACORDE A IICL', replacement:'SI'},
+      {damage:'DENTED', quantity:2, location:'ACORDE A IICL', replacement:'NO'},
+      {damage:'CONTAMINATED', quantity:1, location:'ACORDE A IICL', replacement:'SI'},
+      {damage:'LEAK', quantity:1, location:'ACORDE A IICL', replacement:'SI'},
+      {damage:'BURNED', quantity:1, location:'ACORDE A IICL', replacement:'SI'}
+    ];
+    const EPP_REQUIRED = ['Casco','Guantes','Protectores auditivos','Lentes','Botas punta de acero'];
+    const EPP_SCENARIOS = [
+      {
+        title:'Operador sin guantes',
+        detections:[
+          {component:'Guantes', hallazgo:'Operador sin guantes', estado:'Crítico', severity:'Severa', risk:'Riesgo de lesión en manos', action:'No iniciar labor hasta colocar guantes de seguridad', confidence:96, overlay:{x:38,y:48,w:24,h:18}},
+          {component:'Casco', hallazgo:'Casco detectado correctamente', estado:'OK', severity:'Leve', risk:'Sin riesgo observado', action:'Mantener uso correcto de casco', confidence:91, overlay:{x:36,y:10,w:22,h:16}}
+        ]
+      },
+      {
+        title:'Operador sin casco',
+        detections:[
+          {component:'Casco', hallazgo:'Operador sin casco', estado:'Crítico', severity:'Severa', risk:'Riesgo de lesión craneal', action:'Colocar casco antes de ingresar a zona operativa', confidence:95, overlay:{x:35,y:9,w:26,h:18}},
+          {component:'Lentes', hallazgo:'Lentes no visibles', estado:'Observado', severity:'Media', risk:'Riesgo de lesión ocular', action:'Validar uso de lentes de seguridad', confidence:89, overlay:{x:40,y:22,w:18,h:10}}
+        ]
+      },
+      {
+        title:'Operador sin protectores auditivos',
+        detections:[
+          {component:'Protectores auditivos', hallazgo:'Operador sin protectores auditivos', estado:'Observado', severity:'Media', risk:'Exposición a ruido operativo', action:'Colocar protectores auditivos antes de la tarea', confidence:90, overlay:{x:34,y:18,w:28,h:14}},
+          {component:'Botas punta de acero', hallazgo:'Botas de seguridad detectadas', estado:'OK', severity:'Leve', risk:'Sin riesgo observado', action:'Mantener uso de botas', confidence:88, overlay:{x:38,y:74,w:24,h:16}}
+        ]
+      },
+      {
+        title:'EPP completo',
+        detections:[
+          {component:'EPP completo', hallazgo:'Operador con EPP completo', estado:'OK', severity:'Leve', risk:'Sin riesgo observado', action:'Apto para labores de inspección', confidence:97, overlay:{x:28,y:8,w:42,h:82}}
+        ]
+      }
+    ];
+
+    let currentSection = 's1';
+    let sectionImages = Object.fromEntries(SECTIONS.map(sec => [sec.id, []]));
+    let eppImages = [];
+    let eppAnalysis = null;
+    let checklistState = {};
+    let analyzedSections = {};
+    let history = [...HISTORY_SEED];
+    let totalInspectionCounter = 18;
+    let trendChart, sectionChart, severityChart;
+
+    function init(){
+      SECTIONS.forEach(sec=>{
+        checklistState[sec.id] = sec.checklist.map(item => item.defaultStatus || 'N/A');
+      });
+      bindEvents();
+      renderSectionTabs();
+      renderCurrentSection();
+      renderAIConsole();
+      renderDashboard();
+      renderHistory();
+      renderResults();
+      renderEPPView();
+      renderReport();
+      renderActivity();
+      initCharts();
+      updateClock();
+      setInterval(updateClock,60000);
+      lucide.createIcons();
+    }
+
+    function bindEvents(){
+      document.getElementById('loginForm').addEventListener('submit',function(e){
+        e.preventDefault();
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appScreen').classList.remove('hidden');
+        const email = document.getElementById('email').value || 'operador@cyra.ai';
+        document.getElementById('userName').textContent = email.split('@')[0].replace(/[._-]/g,' ');
+        toast('Bienvenido a CYRA Reefer Vision');
+        lucide.createIcons();
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click',()=>{document.getElementById('appScreen').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('sidebar').classList.remove('open');});
+      document.getElementById('menuToggle').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+
+      document.querySelectorAll('#navMenu button').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.view)));
+      document.getElementById('pickFilesBtn').addEventListener('click',()=>document.getElementById('sectionFiles').click());
+      document.getElementById('sectionFiles').addEventListener('change',e=>handleFiles(e.target.files));
+      document.getElementById('loadDemoBtn').addEventListener('click',loadDemoImages);
+      document.getElementById('analyzeSectionBtn').addEventListener('click',analyzeCurrentSection);
+      document.getElementById('pickEppFilesBtn').addEventListener('click',()=>document.getElementById('eppFiles').click());
+      document.getElementById('eppFiles').addEventListener('change',e=>handleEPPFiles(e.target.files));
+      document.getElementById('loadEppDemoBtn').addEventListener('click',loadEPPDemo);
+      document.getElementById('analyzeEppBtn').addEventListener('click',analyzeEPP);
+      document.getElementById('copyChecklistBtn').addEventListener('click',()=>{navigator.clipboard?.writeText(SECTIONS.find(s=>s.id===currentSection).checklist.join('\n'));toast('Checklist copiado.');});
+      document.getElementById('findingSearch').addEventListener('input',renderResults);
+      document.getElementById('historySearch')?.addEventListener('input',renderHistory);
+      document.getElementById('historyFilter')?.addEventListener('change',renderHistory);
+      document.getElementById('historySort')?.addEventListener('change',renderHistory);
+
+      const drop = document.getElementById('uploadBox');
+      ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));
+      ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));
+      drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
+      const eppDrop = document.getElementById('eppUploadBox');
+      ['dragenter','dragover'].forEach(ev=>eppDrop.addEventListener(ev,e=>{e.preventDefault();eppDrop.classList.add('drag')}));
+      ['dragleave','drop'].forEach(ev=>eppDrop.addEventListener(ev,e=>{e.preventDefault();eppDrop.classList.remove('drag')}));
+      eppDrop.addEventListener('drop',e=>handleEPPFiles(e.dataTransfer.files));
+    }
+
+    function switchView(id){
+      document.querySelectorAll('#navMenu button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+      document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
+      document.getElementById('sidebar').classList.remove('open');
+      if(id==='reportView') renderReport();
+      if(id==='resultsView') renderResults();
+      if(id==='eppView') renderEPPView();
+    }
+
+    function renderSectionTabs(){
+      const box = document.getElementById('sectionTabs');
+      box.innerHTML = SECTIONS.map(sec=>{
+        const imgCount = sectionImages[sec.id].length;
+        const analyzed = analyzedSections[sec.id];
+        return `<button class="section-tab ${sec.id===currentSection?'active':''}" onclick="selectSection('${sec.id}')"><b>${sec.code}</b><span>${sec.title}</span><div class="small" style="margin-top:6px">${imgCount} img · ${analyzed?('score '+analyzed.score):'pendiente'}</div></button>`;
+      }).join('');
+    }
+
+    function selectSection(id){
+      currentSection = id;
+      renderSectionTabs();
+      renderCurrentSection();
+      lucide.createIcons();
+    }
+
+    function renderCurrentSection(){
+      const sec = SECTIONS.find(s=>s.id===currentSection);
+      document.getElementById('sectionPill').innerHTML = `<i data-lucide="map"></i> ${sec.code}`;
+      document.getElementById('sectionTitle').textContent = sec.title;
+      document.getElementById('sectionDesc').textContent = sec.desc;
+      document.getElementById('sectionMeta').innerHTML = `<span class="pill">Zona: ${sec.zone}</span>${sec.components.map(c=>`<span class="pill gray">${c}</span>`).join('')}`;
+      renderChecklist();
+      renderSectionImages();
+      renderSectionFindings();
+      renderSectionSummary();
+      lucide.createIcons();
+    }
+
+    function renderChecklist(){
+      const sec = SECTIONS.find(s=>s.id===currentSection);
+      const data = checklistState[currentSection];
+      document.getElementById('checklistBox').innerHTML = sec.checklist.map((raw,idx)=>{
+        const item = typeof raw === 'string' ? {label:raw, point:idx+1, component:sec.components[Math.min(idx, sec.components.length-1)]} : raw;
+        const meta = [item.point ? `Punto ${item.point}` : null, item.photo ? 'Foto requerida' : null, item.qty ? `Q: ${item.qty}` : null, item.damage ? `Daño: ${item.damage}` : null].filter(Boolean).join(' · ');
+        return `<div class="check-row">
+          <div><b>${item.label}</b><div class="small">${meta || 'Validación técnica'} · ${item.source || sec.code}</div></div>
+          <select onchange="updateChecklist('${currentSection}',${idx},this.value)">
+            <option ${data[idx]==='N/A'?'selected':''}>N/A</option>
+            <option ${data[idx]==='OK'?'selected':''}>OK</option>
+            <option ${data[idx]==='DMG'?'selected':''}>DMG</option>
+            <option ${data[idx]==='Observado'?'selected':''}>Observado</option>
+            <option ${data[idx]==='Crítico'?'selected':''}>Crítico</option>
+            <option ${data[idx]==='No visible'?'selected':''}>No visible</option>
+          </select>
+        </div>`;
+      }).join('');
+    }
+
+    function updateChecklist(sectionId,index,value){
+      checklistState[sectionId][index] = value;
+      renderSectionSummary();
+      updateAll();
+    }
+
+    function handleFiles(files){
+      const allowed = ['image/jpeg','image/png','image/webp'];
+      const currentTotal = Object.values(sectionImages).reduce((sum,arr)=>sum+arr.length,0) + eppImages.length;
+      let usable = Array.from(files).filter(f=>allowed.includes(f.type));
+      if(!usable.length){toast('Solo se permiten imágenes JPG, PNG o WEBP.'); return;}
+      if(currentTotal + usable.length > 10){usable = usable.slice(0,Math.max(0,10-currentTotal));toast('Se alcanzó el máximo de 10 imágenes.');}
+      usable.forEach(file=>{
+        const reader = new FileReader();
+        reader.onload = e=>{
+          sectionImages[currentSection].push({id:Date.now()+Math.random(),name:file.name,src:e.target.result,detections:[]});
+          renderSectionTabs();
+          renderSectionImages();
+          updateAll();
+          lucide.createIcons();
+        };
+        reader.readAsDataURL(file);
+      });
+      document.getElementById('sectionFiles').value='';
+    }
+
+    function loadDemoImages(){
+      if(sectionImages[currentSection].length>=2){toast('La sección ya tiene evidencia demo.');return;}
+      const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='900' height='640'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#dfeaf4'/><stop offset='1' stop-color='#cfdceb'/></linearGradient><linearGradient id='b' x1='0' x2='1'><stop stop-color='#0F4C81'/><stop offset='1' stop-color='#0a2d58'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><rect x='120' y='40' width='660' height='520' rx='10' fill='#f7fbff' stroke='#cbd5e1' stroke-width='3'/><g opacity='.42'>${Array.from({length:210}).map((_,i)=>`<circle cx='${140+(i%18)*34}' cy='${58+Math.floor(i/18)*34}' r='2.1' fill='#0f172a'/>`).join('')}</g><rect x='205' y='255' width='490' height='220' rx='14' fill='url(#b)'/><circle cx='365' cy='355' r='72' fill='#102030' stroke='rgba(255,255,255,.14)' stroke-width='8'/><path d='M365 288 L385 353 L342 330 Z' fill='rgba(255,255,255,.26)'/><path d='M420 342 L360 368 L375 318 Z' fill='rgba(255,255,255,.2)'/><path d='M338 408 L365 344 L390 392 Z' fill='rgba(255,255,255,.22)'/><rect x='548' y='272' width='118' height='138' rx='8' fill='#17395f'/><rect x='576' y='290' width='44' height='54' rx='4' fill='#0b1220'/><rect x='585' y='352' width='58' height='48' rx='4' fill='rgba(255,255,255,.14)'/><rect x='176' y='160' width='102' height='102' rx='6' fill='none' stroke='#ced7e2' stroke-width='4'/><circle cx='226' cy='210' r='28' fill='none' stroke='#ced7e2' stroke-width='5'/><rect x='505' y='150' width='118' height='118' rx='6' fill='none' stroke='#ced7e2' stroke-width='4'/><rect x='270' y='468' width='112' height='82' rx='8' fill='#e5edf7'/><rect x='410' y='470' width='120' height='76' rx='8' fill='#244262'/><rect x='545' y='470' width='82' height='76' rx='8' fill='#eef4fa'/><text x='450' y='112' text-anchor='middle' fill='#31506e' font-family='Arial' font-size='28'>CYRA Demo Reefer Front</text></svg>`);
+      const src = `data:image/svg+xml;charset=utf-8,${svg}`;
+      sectionImages[currentSection].push({id:Date.now()+Math.random(),name:`demo_${currentSection}_1.png`,src,detections:[]});
+      renderSectionTabs();
+      renderSectionImages();
+      updateAll();
+      toast('Imágenes demo cargadas para la sección.');
+    }
+
+    function removeImage(sectionId,id){
+      sectionImages[sectionId] = sectionImages[sectionId].filter(img=>img.id!==id);
+      if(analyzedSections[sectionId]) delete analyzedSections[sectionId];
+      renderSectionTabs();
+      renderCurrentSection();
+      updateAll();
+      toast('Imagen eliminada.');
+    }
+
+    function renderSectionImages(){
+      const images = sectionImages[currentSection];
+      const box = document.getElementById('sectionPreviewGrid');
+      if(!images.length){
+        box.innerHTML = '<div class="card pad"><div class="small">No hay imágenes en esta sección todavía. Cargue evidencia aquí y el análisis devolverá la imagen con el daño señalado.</div></div>';
+        return;
+      }
+      box.innerHTML = images.map((img,idx)=>renderPreviewCard(img,currentSection,idx)).join('');
+    }
+
+    function renderPreviewCard(img,sectionId,idx){
+      const detections = img.detections || [];
+      return `<div class="preview-card">
+        <div class="preview-top"><span class="chip">${SECTIONS.find(s=>s.id===sectionId).code} · Img ${idx+1}</span><button class="preview-remove" onclick="removeImage('${sectionId}','${img.id}')"><i data-lucide="x" style="width:15px"></i></button></div>
+        <img src="${img.src}" alt="evidencia">
+        ${detections.map(det=>`<div class="overlay-box" style="left:${det.overlay.x}%;top:${det.overlay.y}%;width:${det.overlay.w}%;height:${det.overlay.h}%"><div class="overlay-label ${det.estado==='Crítico'?'bad':det.estado==='Observado' || det.estado==='Requiere limpieza' || det.estado==='Requiere reparación' || det.estado==='Requiere PTI'?'warn':'ok'}">[${det.component.toUpperCase()}] [${det.hallazgo.toUpperCase()}] [${det.severity.toUpperCase()}] [${det.confidence}%]</div></div>`).join('')}
+        <div class="preview-footer"><b>${img.name}</b><div class="small">${detections.length?`${detections.length} hallazgo(s) señalados sobre la imagen`:'Sin análisis todavía'}</div></div>
+      </div>`;
+    }
+
+    function renderSectionFindings(){
+      const box = document.getElementById('sectionFindings');
+      const analyzed = analyzedSections[currentSection];
+      if(!analyzed || !analyzed.findings.length){
+        box.innerHTML = '<div class="finding-card"><div class="finding-icon"><i data-lucide="info"></i></div><div><b>Sin hallazgos en esta sección</b><div class="small">Analice esta sección para generar resultados basados en imagen y checklist.</div></div></div>';
+        return;
+      }
+      box.innerHTML = analyzed.findings.map(f=>`<div class="finding-card"><div class="finding-icon ${f.estado==='Crítico'?'bad':'warn'}"><i data-lucide="${f.estado==='Crítico'?'shield-alert':'triangle-alert'}"></i></div><div><div class="between"><b>${f.hallazgo}</b><span class="pill ${f.estado==='Crítico'?'bad':'warn'}">${f.estado}</span></div><div class="small">${f.zone} · ${f.component}</div><div style="margin-top:8px">Riesgo: <b>${f.risk}</b> · Severidad: <b>${f.severity}</b></div><div class="small">Acción recomendada: ${f.action} · Confianza IA: ${f.confidence}%</div></div></div>`).join('');
+    }
+
+    function renderAIConsole(){
+      const box = document.getElementById('aiSteps');
+      box.innerHTML = AI_STEPS.map((step,idx)=>`<div class="ai-step" id="aiStep${idx}"><i data-lucide="circle"></i><span>${step}</span><span class="small">Pendiente</span></div>`).join('');
+      lucide.createIcons();
+    }
+
+    
+    async function analyzeCurrentSection(){
+      const images = sectionImages[currentSection];
+      if(!images.length){toast('Primero cargue al menos una imagen en este nivel.'); return;}
+      const sec = SECTIONS.find(s=>s.id===currentSection);
+      document.getElementById('aiBar').style.width='0%';
+      document.getElementById('aiPct').textContent='0%';
+      document.getElementById('aiStatusText').textContent='Enviando imágenes al agente Gemini';
+      document.getElementById('aiStatusPill').textContent='Gemini';
+      document.getElementById('aiStatusPill').className='pill';
+
+      let pct=0;
+      const progressTimer=setInterval(()=>{
+        pct=Math.min(92,pct+7);
+        document.getElementById('aiBar').style.width=pct+'%';
+        document.getElementById('aiPct').textContent=pct+'%';
+        if(pct>25) document.getElementById('aiStatusText').textContent='Gemini comparando contra checklist PTI y base documental';
+        if(pct>65) document.getElementById('aiStatusText').textContent='Generando hallazgos, severidad, riesgo y acciones';
+      },230);
+
+      try{
+        const response = await fetch('/api/analyze-section',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            section:sec,
+            checklist:checklistState[currentSection],
+            images:images.map(img=>({id:img.id,name:img.name,dataUrl:img.src}))
+          })
+        });
+        const data = await response.json();
+        if(!response.ok) throw new Error(data.error || 'No se pudo analizar con Gemini');
+        applySectionAIResult(data, currentSection);
+        document.getElementById('aiStatusText').textContent = data.source && data.source.startsWith('fallback') ? 'Resultado generado con respaldo local' : 'Resultado generado con Gemini';
+      }catch(error){
+        console.error(error);
+        generateSectionAnalysis(currentSection);
+        document.getElementById('aiStatusText').textContent='Gemini no respondió. Se usó respaldo local.';
+      }finally{
+        clearInterval(progressTimer);
+        document.getElementById('aiBar').style.width='100%';
+        document.getElementById('aiPct').textContent='100%';
+        document.getElementById('aiStatusPill').textContent='Completado';
+        document.getElementById('aiStatusPill').className='pill ok';
+        renderSectionFindings();
+        renderSectionImages();
+        renderSectionSummary();
+        renderSectionTabs();
+        updateAll();
+        toast('Nivel analizado. Abriendo resultados.');
+        setTimeout(()=>switchView('resultsView'),650);
+      }
+    }
+
+
+
+    function applySectionAIResult(data, sectionId){
+      const sec = SECTIONS.find(s=>s.id===sectionId);
+      const imgs = sectionImages[sectionId];
+      imgs.forEach((img,idx)=>{ img.detections = (data.detectionsByImage?.[idx] || []).map(d=>({...d, zone:d.zone||sec.zone, section:d.section||sec.code})); });
+      const findings = (data.findings || []).map(f=>({
+        zone:f.zone || sec.zone,
+        section:f.section || sec.code,
+        component:f.component || 'Componente',
+        hallazgo:f.hallazgo || 'Hallazgo visual',
+        estado:f.estado || 'Observado',
+        severity:f.severity || 'Media',
+        risk:f.risk || 'Requiere validación técnica',
+        action:f.action || 'Revisar y revalidar con evidencia',
+        confidence:f.confidence || 85,
+        damage:f.damage,
+        qty:f.qty,
+        overlay:f.overlay || {x:20,y:20,w:35,h:22},
+        imageIndex:f.imageIndex || 0
+      }));
+      analyzedSections[sectionId] = {
+        score:data.score ?? calculateSectionScore(findings, checklistState[sectionId]),
+        findings,
+        status:data.status || (data.score>=90?'Operativo':data.score>=70?'Operativo con observaciones':data.score>=50?'Requiere reparación':'Requiere PTI')
+      };
+    }
+
+    function generateSectionAnalysis(sectionId){
+      const sec = SECTIONS.find(s=>s.id===sectionId);
+      const statuses = checklistState[sectionId];
+      const sectionImgs = sectionImages[sectionId];
+      const findings = [];
+
+      sectionImgs.forEach(img=>img.detections=[]);
+
+      let count = Math.min(sec.findings.length, Math.max(1, sectionImgs.length));
+      for(let idx=0; idx<count; idx++){
+        const base = sec.findings[idx];
+        const finding = {...base, zone:sec.zone, section:sec.code};
+        findings.push(finding);
+        const targetImg = sectionImgs[Math.min(idx, sectionImgs.length-1)];
+        targetImg.detections.push(finding);
+      }
+
+      statuses.forEach((st,idx)=>{
+        if(['Observado','Crítico','DMG','No visible'].includes(st)){
+          const item = typeof sec.checklist[idx] === 'string' ? {label:sec.checklist[idx], component:sec.components[Math.min(idx, sec.components.length-1)]} : sec.checklist[idx];
+          const isCritical = st==='Crítico' || (st==='DMG' && ['Batería externa','Controller','Resistencias','Cable de alimentación','Plug','RCD / GPS','Motor condensador'].includes(item.component));
+          findings.push({
+            zone:sec.zone,
+            section:sec.code,
+            component:item.component || sec.components[Math.min(idx, sec.components.length-1)] || 'Componente',
+            hallazgo:(st==='No visible'?'Componente no visible: ':'') + item.label,
+            estado:isCritical?'Crítico':(st==='DMG'?'DMG':st),
+            severity:isCritical?'Severa':'Media',
+            risk:isCritical?'Compromete operación, seguridad o liberación PTI':'Puede afectar desempeño, conformidad o trazabilidad PTI',
+            action:isCritical?'Atender antes de energizar o liberar':'Programar corrección, limpieza o revalidación con evidencia',
+            confidence:80+(idx%15),
+            damage:item.damage,
+            qty:item.qty
+          });
+        }
+      });
+
+      const score = calculateSectionScore(findings, statuses);
+      analyzedSections[sectionId] = {
+        score,
+        findings:dedupeFindings(findings),
+        status:score>=90?'Operativo':score>=70?'Operativo con observaciones':score>=50?'Requiere reparación':'Requiere PTI'
+      };
+    }
+
+    function dedupeFindings(arr){
+      const map = new Map();
+      arr.forEach(item=>{
+        const key = [item.zone,item.component,item.hallazgo,item.estado].join('|');
+        if(!map.has(key)) map.set(key,item);
+      });
+      return Array.from(map.values());
+    }
+
+    function calculateSectionScore(findings,statuses){
+      let score = 100;
+      findings.forEach(f=>{
+        if(f.estado==='Crítico') score -= 25;
+        else if(f.estado==='Requiere PTI') score -= 20;
+        else if(f.estado==='Requiere reparación') score -= 18;
+        else if(f.estado==='DMG') score -= 14;
+        else if(f.estado==='No visible') score -= 6;
+        else if(f.estado==='Requiere limpieza') score -= 10;
+        else if(f.estado==='Observado') score -= 8;
+      });
+      statuses.forEach(st=>{if(st==='Crítico') score -= 10; if(st==='DMG') score -= 7; if(st==='No visible') score -= 3; if(st==='Observado') score -= 4;});
+      return Math.max(18,Math.min(100,score));
+    }
+
+    function renderSectionSummary(){
+      const analyzed = analyzedSections[currentSection];
+      const score = analyzed ? analyzed.score : null;
+      const statePill = document.getElementById('sectionState');
+      const scoreEl = document.getElementById('sectionScore');
+      const labelEl = document.getElementById('sectionScoreLabel');
+      const sumBox = document.getElementById('sectionSummary');
+      if(!analyzed){
+        statePill.textContent = 'Pendiente'; statePill.className='pill gray';
+        scoreEl.textContent = '--'; labelEl.textContent = 'Sin evaluar';
+        setGauge('sectionGauge',0,'gray');
+        sumBox.innerHTML = `<div class="summary-item"><b>Imágenes cargadas</b><div>${sectionImages[currentSection].length}</div></div><div class="summary-item"><b>Checklist</b><div>${checklistState[currentSection].filter(v=>v!=='N/A').length} puntos evaluados</div></div>`;
+        return;
+      }
+      scoreEl.textContent = analyzed.score;
+      labelEl.textContent = scoreLabel(analyzed.score);
+      const tone = analyzed.score>=90?'ok':analyzed.score>=70?'warn':analyzed.score>=50?'warn':'bad';
+      statePill.textContent = analyzed.status; statePill.className='pill '+tone;
+      setGauge('sectionGauge', analyzed.score, tone);
+      sumBox.innerHTML = `
+        <div class="summary-item"><b>Estado final</b><div>${analyzed.status}</div></div>
+        <div class="summary-item"><b>Hallazgos</b><div>${analyzed.findings.length} detectados</div></div>
+        <div class="summary-item"><b>Críticos</b><div>${analyzed.findings.filter(f=>f.estado==='Crítico').length}</div></div>
+        <div class="summary-item"><b>Imágenes analizadas</b><div>${sectionImages[currentSection].length}</div></div>`;
+    }
+
+    function setGauge(id,val,tone){
+      const colors = {ok:'var(--success)',warn:'var(--warning)',bad:'var(--critical)',gray:'rgba(255,255,255,.12)'};
+      const color = colors[tone || (val>=90?'ok':val>=70?'warn':val>=50?'warn':'bad')];
+      document.getElementById(id).style.background = `conic-gradient(${color} ${Math.max(0,val)*3.6}deg, rgba(255,255,255,.08) 0deg)`;
+    }
+
+    function scoreLabel(score){
+      if(score>=90) return 'Excelente';
+      if(score>=70) return 'Bueno';
+      if(score>=50) return 'Regular';
+      return 'Crítico';
+    }
+
+    function getAllFindings(){
+      return Object.values(analyzedSections).flatMap(s=>s.findings || []);
+    }
+
+    function getOverallScore(){
+      const list = Object.values(analyzedSections);
+      if(!list.length) return null;
+      return Math.round(list.reduce((acc,s)=>acc+s.score,0)/list.length);
+    }
+
+    function getOverallStatus(score){
+      if(score===null) return 'Pendiente';
+      if(score>=90) return 'Operativo';
+      if(score>=70) return 'Operativo con observaciones';
+      if(score>=50) return 'Requiere reparación';
+      return 'Requiere PTI';
+    }
+
+
+    function renderEstimateBox(){
+      const findings = getAllFindings();
+      const candidates = findings.filter(f=>f.damage || /missing|faltante|sucio|fuga|quem/i.test(f.hallazgo));
+      const rows = candidates.map(f=>{
+        let dmg = f.damage || (/(missing|faltante)/i.test(f.hallazgo)?'MISSING':/(fuga|aceite|leak)/i.test(f.hallazgo)?'LEAK':/(quem|burn)/i.test(f.hallazgo)?'BURNED':/(sucio|contamin|obstru)/i.test(f.hallazgo)?'CONTAMINATED':'DENTED');
+        const cat = ESTIMATE_CATALOG.find(c=>c.damage===dmg) || ESTIMATE_CATALOG[1];
+        return {...cat, component:f.component, finding:f.hallazgo, section:f.section};
+      });
+      const box = document.getElementById('estimateBox');
+      if(!box) return;
+      box.innerHTML = rows.length ? `<table class="findings-table"><thead><tr><th>Sección</th><th>Componente</th><th>Daño</th><th>Cantidad</th><th>Localización</th><th>Reemplazo</th><th>Hallazgo asociado</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.section}</td><td>${r.component}</td><td><b>${r.damage}</b></td><td>${r.quantity}</td><td>${r.location}</td><td><span class="pill ${r.replacement==='SI'?'bad':'warn'}">${r.replacement}</span></td><td>${r.finding}</td></tr>`).join('')}</tbody></table>` : '<div class="small">Sin daños estimables todavía. Ejecute el análisis de una sección con hallazgos DMG.</div>';
+    }
+
+    function renderResults(){
+      const findings = getAllFindings();
+      const score = getOverallScore();
+      document.getElementById('overallScore').textContent = score===null?'--':score;
+      document.getElementById('overallScoreLabel').textContent = score===null?'Sin evaluación':scoreLabel(score);
+      const tone = score===null?'gray':score>=90?'ok':score>=70?'warn':score>=50?'warn':'bad';
+      document.getElementById('overallStatusPill').textContent = getOverallStatus(score);
+      document.getElementById('overallStatusPill').className = 'pill '+tone;
+      setGauge('overallGauge', score || 0, tone);
+      document.getElementById('overallSummary').innerHTML = `
+        <div class="summary-item"><b>Secciones analizadas</b><div>${Object.keys(analyzedSections).length} / ${SECTIONS.length}</div></div>
+        <div class="summary-item"><b>Hallazgos</b><div>${findings.length}</div></div>
+        <div class="summary-item"><b>Hallazgos críticos</b><div>${findings.filter(f=>f.estado==='Crítico').length}</div></div>
+        <div class="summary-item"><b>Estado general</b><div>${getOverallStatus(score)}</div></div>`;
+
+      const q = (document.getElementById('findingSearch').value || '').toLowerCase();
+      const filtered = findings.filter(f=>Object.values(f).join(' ').toLowerCase().includes(q));
+      document.getElementById('findingsTableBody').innerHTML = filtered.length ? filtered.map(f=>`<tr><td>${f.zone}</td><td>${f.component}</td><td>${f.hallazgo}</td><td><span class="pill ${f.estado==='Crítico'?'bad':'warn'}">${f.estado}</span></td><td>${f.severity}</td><td>${f.risk}</td><td>${f.action}</td><td>${f.confidence}%</td></tr>`).join('') : '<tr><td colspan="8" class="small">No hay hallazgos para mostrar.</td></tr>';
+      renderEstimateBox();
+
+      const evidence = [];
+      Object.entries(sectionImages).forEach(([secId,images])=>images.forEach((img,idx)=>{if((img.detections||[]).length) evidence.push(renderPreviewCard(img,secId,idx));}));
+      document.getElementById('resultsEvidence').innerHTML = evidence.length ? evidence.join('') : '<div class="card pad"><div class="small">Las evidencias aparecerán aquí cuando una sección haya sido analizada.</div></div>';
+      lucide.createIcons();
+    }
+
+
+    function handleEPPFiles(files){
+      const allowed = ['image/jpeg','image/png','image/webp'];
+      const currentTotal = Object.values(sectionImages).reduce((sum,arr)=>sum+arr.length,0) + eppImages.length;
+      let usable = Array.from(files).filter(f=>allowed.includes(f.type));
+      if(!usable.length){toast('Solo se permiten imágenes JPG, PNG o WEBP.'); return;}
+      if(currentTotal + usable.length > 10){usable = usable.slice(0,Math.max(0,10-currentTotal));toast('Se alcanzó el máximo total de 10 imágenes.');}
+      usable.forEach(file=>{
+        const reader = new FileReader();
+        reader.onload = e=>{
+          eppImages.push({id:Date.now()+Math.random(),name:file.name,src:e.target.result,detections:[]});
+          renderEPPView();
+          lucide.createIcons();
+        };
+        reader.readAsDataURL(file);
+      });
+      document.getElementById('eppFiles').value='';
+    }
+
+    function loadEPPDemo(){
+      if(eppImages.length >= 3){toast('Ya hay suficientes imágenes demo de EPP.'); return;}
+      const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='900' height='640'><defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#dce8f2'/><stop offset='1' stop-color='#cbd8e8'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><rect x='70' y='55' width='760' height='530' rx='24' fill='#eef5fb' stroke='#d5e1ee' stroke-width='4'/><circle cx='450' cy='165' r='70' fill='#f6d2bc'/><rect x='390' y='230' width='120' height='180' rx='22' fill='#164a77'/><rect x='330' y='250' width='60' height='190' rx='20' fill='#f6d2bc'/><rect x='510' y='250' width='60' height='190' rx='20' fill='#f6d2bc'/><rect x='400' y='410' width='44' height='120' rx='18' fill='#0f172a'/><rect x='456' y='410' width='44' height='120' rx='18' fill='#0f172a'/><rect x='390' y='530' width='62' height='34' rx='8' fill='#374151'/><rect x='448' y='530' width='62' height='34' rx='8' fill='#374151'/><path d='M384 145 Q450 90 516 145 L510 118 Q450 62 390 118 Z' fill='#f1c40f'/><rect x='408' y='150' width='84' height='14' rx='7' fill='#5a6878'/><text x='450' y='92' text-anchor='middle' fill='#31506e' font-family='Arial' font-size='28'>Operador Demo EPP</text></svg>`);
+      const src = `data:image/svg+xml;charset=utf-8,${svg}`;
+      eppImages.push({id:Date.now()+Math.random(),name:'epp_demo_1.png',src,detections:[]});
+      renderEPPView();
+      toast('Demo EPP cargada.');
+    }
+
+    function removeEPPImage(id){
+      eppImages = eppImages.filter(img=>String(img.id)!==String(id));
+      eppAnalysis = null;
+      renderEPPView();
+      toast('Evidencia EPP eliminada.');
+    }
+
+    function renderEPPPreviewCard(img,idx){
+      const detections = img.detections || [];
+      return `<div class="preview-card"><div class="preview-top"><span class="chip">EPP · Img ${idx+1}</span><button class="preview-remove" onclick="removeEPPImage('${img.id}')"><i data-lucide="x" style="width:15px"></i></button></div><img src="${img.src}" alt="epp">${detections.map(det=>`<div class="overlay-box" style="left:${det.overlay.x}%;top:${det.overlay.y}%;width:${det.overlay.w}%;height:${det.overlay.h}%"><div class="overlay-label ${det.estado==='Crítico'?'bad':det.estado==='OK'?'ok':'warn'}">[${det.component.toUpperCase()}] [${det.hallazgo.toUpperCase()}] [${det.confidence}%]</div></div>`).join('')}<div class="preview-footer"><b>${img.name}</b><div class="small">${detections.length?`${detections.length} detección(es) EPP`:'Sin análisis todavía'}</div></div></div>`;
+    }
+
+    
+    async function analyzeEPP(){
+      if(!eppImages.length){toast('Primero cargue una foto del operador.'); return;}
+      const pill = document.getElementById('eppStatusPill');
+      pill.textContent='Analizando';
+      pill.className='pill';
+      try{
+        const response = await fetch('/api/analyze-epp',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({images:eppImages.map(img=>({id:img.id,name:img.name,dataUrl:img.src}))})
+        });
+        const data = await response.json();
+        if(!response.ok) throw new Error(data.error || 'No se pudo analizar EPP con Gemini');
+        eppImages.forEach((img,idx)=>{ img.detections = (data.detectionsByImage?.[idx] || []).map(d=>({...d})); });
+        eppAnalysis = {
+          findings:data.findings || [],
+          score:data.score ?? 0,
+          status:data.status || 'Pendiente',
+          compliant:data.compliant ?? (data.findings || []).filter(f=>f.estado==='OK').length,
+          alerts:data.alerts ?? (data.findings || []).filter(f=>f.estado!=='OK').length
+        };
+        toast((data.source && data.source.startsWith('fallback')) ? 'EPP evaluado con respaldo local.' : 'EPP evaluado con Gemini.');
+      }catch(error){
+        console.error(error);
+        const findings = [];
+        eppImages.forEach((img,idx)=>{
+          const scenario = EPP_SCENARIOS[idx % EPP_SCENARIOS.length];
+          img.detections = scenario.detections.map(d=>({...d, imageIndex:idx}));
+          img.detections.forEach(d=>findings.push({...d}));
+        });
+        const alerts = findings.filter(f=>f.estado!=='OK');
+        let score = 100;
+        alerts.forEach(f=>{ if(f.estado==='Crítico') score -= 28; else score -= 12; });
+        score = Math.max(20, Math.min(100, score));
+        eppAnalysis = {findings, score, status: score>=95 ? 'Cumple EPP' : score>=75 ? 'Cumple con observaciones' : 'Alerta de seguridad', compliant: findings.filter(f=>f.estado==='OK').length, alerts: alerts.length};
+        toast('Gemini no respondió. Se usó respaldo local EPP.');
+      }
+      renderEPPView();
+      renderDashboard();
+      renderReport();
+    }
+
+
+    function renderEPPView(){
+      const grid = document.getElementById('eppPreviewGrid');
+      grid.innerHTML = eppImages.length ? eppImages.map((img,idx)=>renderEPPPreviewCard(img,idx)).join('') : '<div class="card pad"><div class="small">Aún no hay evidencias EPP. Cargue imágenes del operador y ejecute el análisis.</div></div>';
+      const pill = document.getElementById('eppStatusPill');
+      const scoreEl = document.getElementById('eppScore');
+      const scoreLabelEl = document.getElementById('eppScoreLabel');
+      const sum = document.getElementById('eppSummary');
+      const list = document.getElementById('eppFindingsList');
+      if(!eppAnalysis){
+        pill.textContent = 'Pendiente'; pill.className = 'pill gray';
+        scoreEl.textContent = '--'; scoreLabelEl.textContent = 'Sin evaluación';
+        setGauge('eppGauge',0,'gray');
+        sum.innerHTML = `<div class="summary-item"><b>Evidencias cargadas</b><div>${eppImages.length}</div></div><div class="summary-item"><b>EPP requeridos</b><div>${EPP_REQUIRED.join(', ')}</div></div>`;
+        list.innerHTML = '<div class="finding-card"><div class="finding-icon"><i data-lucide="hard-hat"></i></div><div><b>Esperando análisis EPP</b><div class="small">La IA revisará si el operador usa casco, guantes, lentes, protectores auditivos y botas de seguridad.</div></div></div>';
+      } else {
+        const tone = eppAnalysis.score>=95 ? 'ok' : eppAnalysis.score>=75 ? 'warn' : 'bad';
+        pill.textContent = eppAnalysis.status; pill.className = 'pill ' + tone;
+        scoreEl.textContent = eppAnalysis.score; scoreLabelEl.textContent = eppAnalysis.score>=95 ? 'Conforme' : eppAnalysis.score>=75 ? 'Observado' : 'Alerta';
+        setGauge('eppGauge', eppAnalysis.score, tone);
+        sum.innerHTML = `<div class="summary-item"><b>Fotos analizadas</b><div>${eppImages.length}</div></div><div class="summary-item"><b>Alertas</b><div>${eppAnalysis.alerts}</div></div><div class="summary-item"><b>Elementos conformes</b><div>${eppAnalysis.compliant}</div></div><div class="summary-item"><b>Acción</b><div>${eppAnalysis.score<75?'Corregir EPP antes de iniciar':'Permitir con validación visual'}</div></div>`;
+        list.innerHTML = eppAnalysis.findings.map(f=>`<div class="finding-card"><div class="finding-icon ${f.estado==='Crítico'?'bad':f.estado==='OK'?'':'warn'}"><i data-lucide="${f.estado==='Crítico'?'shield-alert':f.estado==='OK'?'badge-check':'triangle-alert'}"></i></div><div><div class="between"><b>${f.hallazgo}</b><span class="pill ${f.estado==='Crítico'?'bad':f.estado==='OK'?'ok':'warn'}">${f.estado}</span></div><div class="small">Componente: ${f.component}</div><div style="margin-top:8px">Riesgo: <b>${f.risk}</b> · Severidad: <b>${f.severity}</b></div><div class="small">Acción recomendada: ${f.action} · Confianza IA: ${f.confidence}%</div></div></div>`).join('');
+      }
+      lucide.createIcons();
+    }
+
+    function renderHistory(){
+      if(!document.getElementById('historyTableBody')) return;
+      const q = (document.getElementById('historySearch')?.value || '').toLowerCase();
+      const status = document.getElementById('historyFilter')?.value || '';
+      const sort = document.getElementById('historySort')?.value || 'dateDesc';
+      let data = history.filter(row=>(!status || row.status===status) && Object.values(row).join(' ').toLowerCase().includes(q));
+      data.sort((a,b)=>sort==='scoreDesc'?b.score-a.score:sort==='scoreAsc'?a.score-b.score:sort==='findingsDesc'?b.findings-a.findings:b.date.localeCompare(a.date));
+      document.getElementById('historyTableBody').innerHTML = data.map(h=>`<tr><td>${h.date}</td><td class="mono">${h.container}</td><td>${h.result}</td><td><span class="pill ${h.status==='Operativo'?'ok':h.status==='Operativo con observaciones'?'warn':'bad'}">${h.status}</span></td><td>${h.score}</td><td>${h.findings}</td><td>${h.critical}</td></tr>`).join('');
+    }
+
+    function renderDashboard(){
+      if(!document.getElementById('kpiInspections')) return;
+      const findings = getAllFindings();
+      document.getElementById('kpiInspections').textContent = totalInspectionCounter;
+      document.getElementById('kpiReefers').textContent = totalInspectionCounter;
+      document.getElementById('kpiFindings').textContent = findings.length;
+      document.getElementById('kpiCritical').textContent = findings.filter(f=>f.estado==='Crítico').length;
+      document.getElementById('dashboardSections').innerHTML = SECTIONS.map(sec=>{
+        const analyzed = analyzedSections[sec.id];
+        return `<div class="summary-item"><div class="between"><b>${sec.code}</b><span class="pill ${analyzed?(analyzed.score>=90?'ok':analyzed.score>=70?'warn':'bad'):'gray'}">${analyzed?analyzed.score:'--'}</span></div><div class="small">${sec.title}</div><div class="small" style="margin-top:6px">${sectionImages[sec.id].length} imágenes · ${analyzed?analyzed.findings.length+' hallazgo(s)':'pendiente'}</div></div>`;
+      }).join('') + `<div class="summary-item"><div class="between"><b>EPP Operador</b><span class="pill ${eppAnalysis?(eppAnalysis.score>=95?'ok':eppAnalysis.score>=75?'warn':'bad'):'gray'}">${eppAnalysis?eppAnalysis.score:'--'}</span></div><div class="small">Cumplimiento de casco, guantes, lentes, protectores y botas</div><div class="small" style="margin-top:6px">${eppImages.length} imágenes · ${eppAnalysis?eppAnalysis.alerts+' alerta(s)':'pendiente'}</div></div>`;
+      updateCharts();
+    }
+
+    function renderActivity(){
+      document.getElementById('activityList').innerHTML = [
+        ['Sección 2 priorizada','Posibles hallazgos eléctricos y de condensador','warn'],
+        ['Inspección demo lista','Cargar imágenes por sección para analizar','ok'],
+        ['Ruta PTI guiada','Checklist técnico ordenado por secciones','ok'],
+        ['Riesgo reefer','Electrocución, golpes, quemaduras, lesiones oculares','bad']
+      ].map(a=>`<div class="activity-item"><div class="dot" style="background:var(--${a[2]==='bad'?'critical':a[2]==='warn'?'warning':'success'});box-shadow:0 0 18px var(--${a[2]==='bad'?'critical':a[2]==='warn'?'warning':'success'})"></div><div><b>${a[0]}</b><div class="small">${a[1]}</div></div><i data-lucide="chevron-right"></i></div>`).join('');
+      lucide.createIcons();
+    }
+
+    function renderReport(){
+      const score = getOverallScore();
+      const findings = getAllFindings();
+      const status = getOverallStatus(score);
+      document.getElementById('reportBox').innerHTML = `
+        <div class="between" style="flex-wrap:wrap;gap:16px"><div><h2>Reporte ejecutivo PTI · CYRA Reefer Vision</h2><div class="small">Inspección visual asistida por IA, con carga de imágenes por sección y señalización de daño sobre evidencia fotográfica.</div></div><div style="text-align:right"><div class="small">ID Reporte</div><div class="mono"><b>CYRA-PTI-${new Date().getFullYear()}-${String(history.length+1).padStart(4,'0')}</b></div></div></div>
+        <div class="report-grid">
+          <div class="report-metric"><b>Score general</b><h2>${score===null?'--':score}</h2><span>${score===null?'Sin evaluación':scoreLabel(score)}</span></div>
+          <div class="report-metric"><b>Estado final</b><h2 style="font-size:1.2rem">${status}</h2></div>
+          <div class="report-metric"><b>Hallazgos</b><h2>${findings.length}</h2></div>
+          <div class="report-metric"><b>Críticos</b><h2>${findings.filter(f=>f.estado==='Crítico').length}</h2></div>
+        </div>
+        <h3>Resumen ejecutivo</h3>
+        <p>${score===null?'Aún no se ha ejecutado una evaluación completa. La plataforma está preparada para procesar imágenes por sección y generar hallazgos técnicos.':`Se analizaron ${Object.keys(analyzedSections).length} sección(es) de la ruta PTI. El resultado general es <b>${status}</b> con score <b>${score}</b>. ${findings.length?`Se detectaron ${findings.length} hallazgos, incluyendo ${findings.filter(f=>f.estado==='Crítico').length} críticos.`:'No se detectaron hallazgos relevantes.'}`}</p>
+        <h3>Hallazgos detectados</h3>
+        <ul>${findings.length?findings.map(f=>`<li><b>${f.section} · ${f.component}:</b> ${f.hallazgo}. Estado ${f.estado}, severidad ${f.severity}. Riesgo: ${f.risk}. Acción: ${f.action}.</li>`).join(''):'<li>Sin hallazgos pendientes.</li>'}</ul>
+        <h3>Estimación de daños</h3><p>La demo utiliza el catálogo ESTIMADO del checklist: MISSING, DENTED, CONTAMINATED, LEAK y BURNED, con localización acorde a IICL e indicador de reemplazo SI/NO.</p>
+        <h3>Recomendación final</h3>
+        <p>${status==='Operativo'?'Unidad apta visualmente para operación y cierre documental PTI.':status==='Operativo con observaciones'?'Liberar con observaciones controladas y programar corrección puntual.':status==='Requiere reparación'?'Realizar reparación específica y revalidar evidencia antes de liberar la unidad.':'No liberar la unidad. Ejecutar PTI o revisión técnica integral antes de energizar u operar.'}</p>
+        ${eppAnalysis?`<h3>Evaluación EPP del operador</h3><p>Estado EPP: <b>${eppAnalysis.status}</b> con score <b>${eppAnalysis.score}</b>. Se registraron <b>${eppAnalysis.alerts}</b> alerta(s) en las evidencias del operador.</p><ul>${eppAnalysis.findings.map(f=>`<li><b>${f.component}:</b> ${f.hallazgo}. Acción: ${f.action}.</li>`).join('')}</ul>`:''}`;
+    }
+
+    function exportPDF(){renderReport();window.print();toast('Exportación PDF simulada desde impresión del navegador.');}
+    function exportExcel(){
+      const findings = getAllFindings();
+      const csv = 'Seccion,Zona,Componente,Hallazgo,Estado,Severidad,Riesgo,Accion,Confianza\n' + findings.map(f=>`"${f.section}","${f.zone}","${f.component}","${f.hallazgo}","${f.estado}","${f.severity}","${f.risk}","${f.action}","${f.confidence}%"`).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'cyra_reporte_reefer_vision.csv';
+      a.click();
+      toast('Exportación Excel/CSV generada.');
+    }
+
+    function updateAll(){
+      renderDashboard();
+      renderResults();
+      renderEPPView();
+      renderReport();
+      renderHistory();
+      lucide.createIcons();
+    }
+
+    function saveCurrentInspection(){
+      const score = getOverallScore();
+      if(score===null){toast('Aún no hay resultados para guardar.'); return;}
+      totalInspectionCounter += 1;
+      history.unshift({
+        date:new Date().toISOString().slice(0,16).replace('T',' '),
+        container:'CYRU '+Math.floor(100000+Math.random()*899999)+'-'+Math.floor(Math.random()*9),
+        result:score>=90?'Apto':score>=70?'Apto con observaciones':score>=50?'Requiere reparación':'Requiere PTI',
+        status:getOverallStatus(score),
+        score,
+        findings:getAllFindings().length,
+        critical:getAllFindings().filter(f=>f.estado==='Crítico').length
+      });
+      renderHistory();
+      renderDashboard();
+      toast('Inspección guardada en el historial.');
+    }
+
+    function initCharts(){
+      Chart.defaults.color = '#c1d1e0';
+      Chart.defaults.borderColor = 'rgba(255,255,255,.08)';
+      trendChart = new Chart(document.getElementById('trendChart'),{
+        type:'line',
+        data:{labels:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],datasets:[{label:'Inspecciones',data:[14,18,16,23,19,21,17],tension:.42,fill:true},{label:'Hallazgos',data:[4,5,3,8,6,7,4],tension:.42,fill:true}]},
+        options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+      });
+      sectionChart = new Chart(document.getElementById('sectionChart'),{
+        type:'bar',
+        data:{labels:SECTIONS.map(s=>s.code.replace('SECCIÓN ','S')),datasets:[{label:'Hallazgos',data:SECTIONS.map(()=>0),borderRadius:12}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+      });
+      severityChart = new Chart(document.getElementById('severityChart'),{
+        type:'doughnut',
+        data:{labels:['Leve','Media','Severa'],datasets:[{data:[0,0,0],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+      });
+    }
+
+    function updateCharts(){
+      if(!sectionChart || !severityChart) return;
+      const findings = getAllFindings();
+      sectionChart.data.datasets[0].data = SECTIONS.map(s=> (analyzedSections[s.id]?.findings.length || 0));
+      sectionChart.update();
+      const sev = {Leve:0,Media:0,Severa:0};
+      findings.forEach(f=>sev[f.severity]=(sev[f.severity]||0)+1);
+      severityChart.data.datasets[0].data = [sev.Leve||0, sev.Media||0, sev.Severa||0];
+      severityChart.update();
+    }
+
+    function updateClock(){
+      const now = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+      const clock = document.getElementById('clock');
+      if(clock) clock.textContent = now;
+    }
+
+    function toast(msg){
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),2600);
+    }
+
+    init();
+  </script>
+</body>
+</html>
